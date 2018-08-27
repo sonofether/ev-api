@@ -46,7 +46,7 @@ public class AuthenticationFilter extends GenericFilterBean {
         try {
             if (postToLogin(httpRequest, resourcePath)) {
                 logger.debug("Trying to authenticate user {} by X-Auth-Username method", basicAuth);
-                // Do basic auth stuff
+                // Do basic auth and issue a jwt
                 validateBasicAuth(httpResponse, basicAuth);
                 return;
             } else if (token.isPresent()) {
@@ -69,7 +69,7 @@ public class AuthenticationFilter extends GenericFilterBean {
     }
     
     private void validateBasicAuth(HttpServletResponse httpResponse, Optional<String> basicAuth) {       
-        UsernamePasswordAuthenticationToken requestAuthentication = new UsernamePasswordAuthenticationToken(basicAuth, basicAuth);
+        UsernamePasswordAuthenticationToken requestAuthentication = new UsernamePasswordAuthenticationToken(basicAuth, null);
         Authentication resultOfAuthentication = authenticationManager.authenticate(requestAuthentication);
         if (resultOfAuthentication == null || !resultOfAuthentication.isAuthenticated()) {
             throw new InternalAuthenticationServiceException("Unable to authenticate Domain User for provided credentials");
@@ -77,11 +77,9 @@ public class AuthenticationFilter extends GenericFilterBean {
                    
         SecurityContextHolder.getContext().setAuthentication(resultOfAuthentication);
         httpResponse.setStatus(HttpServletResponse.SC_OK);
-        
-        // TODO: Build token and stick into X-Auth-Token header
-        String token = "TESTING";
-        // TODO: Eventually the jwt will be stored here. We will convert to a string and send back in the header.
-        token = (String)resultOfAuthentication.getCredentials();
+
+        // Store the auth token in the headers
+        String token = (String)resultOfAuthentication.getCredentials();
         httpResponse.addHeader("X-Auth-Token", token);
         
         return;
