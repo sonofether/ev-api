@@ -30,9 +30,12 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 public class BasicAuthenticationProvider implements AuthenticationProvider {
-    @Value( "${jwt.public.key.file}" )
+    @Value( "${jwt.private.key.file}" )
     private String privateKeyFile;
-
+    
+    @Value("${token.timeout.minutes}")
+    private int timeout;
+    
     private String user = "";
     private String pass = "";
     
@@ -100,7 +103,7 @@ public class BasicAuthenticationProvider implements AuthenticationProvider {
             Date now = new Date();
             // Generate the jwt
             String token = Jwts.builder().setIssuer("TestIssuance").setSubject("evapi auth").claim("user", user)
-                        .setIssuedAt(now).setExpiration(DateUtils.addMinutes(now, 5))
+                        .setIssuedAt(now).setExpiration(DateUtils.addMinutes(now, timeout))
                         .signWith(SignatureAlgorithm.RS256, key).compact();
             
             return token;

@@ -14,6 +14,7 @@ com/godaddy/evapi/controller/CNameController.class
 com/godaddy/evapi/controller/OrganizationController.class
 com/godaddy/evapi/model/ValidationItemModel.class
 com/godaddy/evapi/MainApplication.class
+com/godaddy/evapi/model/BlacklistModel.class
 com/godaddy/evapi/model/CollisionModel.class
 com/godaddy/evapi/controller/LoginController.class
 com/godaddy/evapi/security/SecurityConfiguration.class

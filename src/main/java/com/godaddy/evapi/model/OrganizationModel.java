@@ -7,7 +7,6 @@ public class OrganizationModel extends BaseModel {
     private UUID id;
     private String organizationName;
     private String commonName;
-    private String organizationalUnitName;
     private String serialNumber;
     private String localityName;
     private String stateOrProvinceName;
@@ -36,15 +35,7 @@ public class OrganizationModel extends BaseModel {
     public void setCommonName(String commonName) {
         this.commonName = commonName;
     }
-    
-    public String getOrganizationalUnitName() {
-        return organizationalUnitName;
-    }
-    
-    public void setOrganizationalUnitName(String organizationalUnitName) {
-        this.organizationalUnitName = organizationalUnitName;
-    }
-    
+        
     public String getSerialNumber() {
         return serialNumber;
     }

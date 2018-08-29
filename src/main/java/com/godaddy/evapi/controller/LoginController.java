@@ -19,10 +19,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 @RestController
 @RequestMapping(value = "/login")
-public class LoginController {
-    @Value( "${jwt.file}" )
-    private String sshFile;
-    
+public class LoginController {    
     @GetMapping("")
     public boolean getLogin() {
         return true;

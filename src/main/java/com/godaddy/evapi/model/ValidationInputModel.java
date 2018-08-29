@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public class ValidationInputModel extends BaseModel {
     private UUID certId;
-    private String validationItem;
+    private String item;
     private String validates;
     
     public UUID getCertId() {
@@ -15,12 +15,12 @@ public class ValidationInputModel extends BaseModel {
         this.certId = certId;
     }
     
-    public String getValidationItem() {
-        return validationItem;
+    public String getItem() {
+        return item;
     }
     
-    public void setValidationItem(String validationItem) {
-        this.validationItem = validationItem;
+    public void setItem(String item) {
+        this.item = item;
     }
     
     public String getValidates() {

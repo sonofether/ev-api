@@ -1,5 +1,7 @@
 package com.godaddy.evapi.controller;
 
+import java.util.UUID;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,12 +13,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.godaddy.evapi.model.OrganizationListModel;
+import com.godaddy.evapi.model.OrganizationModel;
 
 @RestController
 @RequestMapping(value = "/org")
 public class OrganizationController {
-    @GetMapping(value="", params = { "offset", "limit" })
-    public boolean GetOrganizationList(@RequestParam( "offset" ) int offset, @RequestParam( "limit" ) int limit) {
+    
+    //@RequestParam("something") Optional<String> something
+    @GetMapping(value="")
+    public boolean GetOrganizationList(@RequestParam( value="offset", required=false ) int offset, @RequestParam( value="limit", required=false ) int limit) {
         OrganizationListModel orgList = new OrganizationListModel();
         
         // Connect to datastore
@@ -40,7 +45,18 @@ public class OrganizationController {
     
     // This will only ever return ONE frecord
     @GetMapping(value="/{id}")
-    public void GetOrganization(@PathVariable(value = "id") String orgId) {
+    public OrganizationModel GetOrganization(@PathVariable(value = "id") String orgId) {
+        OrganizationModel org = new OrganizationModel();
+        
+        org.setCommonName("example.com");
+        org.setCountryName("US");
+        org.setId(UUID.randomUUID());
+        org.setLocalityName("Tempe");
+        org.setOrganizationName("TESITNG");
+        org.setSerialNumber("12345");
+        org.setStateOrProvinceName("AZ");
+        
+        return org;
         // Connect to data store
         
         // Get record
@@ -66,7 +82,7 @@ public class OrganizationController {
     
     @PutMapping(value="/{id}")
     public void UpdateOrganization(@PathVariable(value = "id") String orgId) {
-// Connect to data store
+        // Connect to data store
         
         // Get record
        

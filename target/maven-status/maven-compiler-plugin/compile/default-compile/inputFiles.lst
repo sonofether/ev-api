@@ -15,5 +15,6 @@
 /Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/ApplicationConfiguration.java
 /Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/model/ValidationInputModel.java
 /Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/controller/CNameController.java
+/Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/model/BlacklistModel.java
 /Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/security/TokenAuthenticationProvider.java
 /Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/security/AuthenticationFilter.java
