@@ -2,8 +2,10 @@ package com.godaddy.evapi.model;
 
 import java.util.UUID;
 
+// TODO: Remove commented code
+//@Document(indexName="organization", type="record")
 public class OrganizationModel extends BaseModel {
-
+//    @Id
     private UUID id;
     private String organizationName;
     private String commonName;
@@ -11,6 +13,20 @@ public class OrganizationModel extends BaseModel {
     private String localityName;
     private String stateOrProvinceName;
     private String countryName;
+    private String ca;
+    
+    public OrganizationModel() {
+        // Default constructor - do nothing
+    }
+        
+    public OrganizationModel(UUID id, String orgName, String cName, String serialNum, String locality, String state, String country, String ca) {
+        this.id = id;
+        this.setValues(orgName, cName, serialNum, locality, state, country, ca);
+    }
+    
+    public OrganizationModel( String orgName, String cName, String serialNum, String locality, String state, String country, String ca) {
+        this.setValues(orgName, cName, serialNum, locality, state, country, ca);
+    }
     
     public UUID getId() {
         return id;
@@ -66,6 +82,28 @@ public class OrganizationModel extends BaseModel {
     
     public void setCountryName(String countryName) {
         this.countryName = countryName;
+    }
+    
+    public String getCa() {
+        return ca;
+    }
+
+    public void setCa(String ca) {
+        this.ca = ca;
+    }
+
+    // PRIVATE calls
+    private void setValues(String orgName, String cName, String serialNum, String locality, String state, String country, String ca) {
+        this.organizationName = orgName;
+        this.commonName = cName;
+        this.serialNumber = serialNum;
+        this.localityName = locality;
+        this.stateOrProvinceName = state;
+        this.countryName = country;
+        this.ca = ca;
+        if(this.id == null) {
+            this.id = UUID.randomUUID();
+        }
     }
     
 }

@@ -1,3 +1,5 @@
+/Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/repository/OrganizationRepository.java
+/Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/service/IOrganizationService.java
 /Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/controller/OrganizationController.java
 /Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/model/OrganizationInputModel.java
 /Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/model/OrganizationModel.java
@@ -11,6 +13,7 @@
 /Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/controller/LoginController.java
 /Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/controller/ValidationController.java
 /Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/model/ValidationItemModel.java
+/Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/service/OrganizationService.java
 /Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/security/BasicAuthenticationProvider.java
 /Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/ApplicationConfiguration.java
 /Users/asink/Documents/GitHub/ev-api/src/main/java/com/godaddy/evapi/model/ValidationInputModel.java
