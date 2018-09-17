@@ -1,5 +1,8 @@
 package com.godaddy.evapi.controller;
 
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,11 +13,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.godaddy.evapi.model.ValidationInputModel;
+
 @RestController
 @RequestMapping(value = "/validation")
 public class ValidationController {
-    @GetMapping(value="", params = { "offset", "limit" })
-    public void GetValidationList(@RequestParam( "offset" ) int offset, @RequestParam( "limit" ) int limit) {
+    //@Autowired
+    //IValidationService validationService;
+    
+    private int offset;
+    private int limit;
+    
+    @GetMapping(value="")
+    public void GetValidationList(@RequestParam( "offset" ) Optional<Integer> offset, @RequestParam( "limit" ) Optional<Integer> limit) {
+        setOffsetLimit(offset, limit);
         // Connect to datastore
         
         // Get records
@@ -37,15 +49,15 @@ public class ValidationController {
         // Return        
     }
     
-    @GetMapping(value="/certificate/{certId}", params = { "offset", "limit" })
-    public void AddValidationItem(@PathVariable(value="certId") String certId,
-                @RequestParam( "offset" ) int offset, @RequestParam( "limit" ) int limit) {
+    @GetMapping(value="/certificate/{certId}")
+    public void GetValidationItems(@PathVariable(value="certId") String certId,
+                @RequestParam( "offset" ) Optional<Integer> offset, @RequestParam( "limit" ) Optional<Integer> limit) {
         
     }
     
     // TODO: Handle file upload
     @PostMapping("")
-    public void AddValidationItem() {
+    public void AddValidationItem(@RequestBody ValidationInputModel validationItem) {
         // Connect to data store
         
         // Create new object
@@ -79,4 +91,13 @@ public class ValidationController {
         // return
     }
     
+    // PRIVATE CALLS / HELPER FUNCTIONS
+    
+    // Validate/sanity check the offset and limit values
+    private void setOffsetLimit(Optional<Integer> offset, Optional<Integer> limit) {
+        // Offset must not be negative
+        this.offset =  offset.isPresent() && offset.get() > 0 ? offset.get() : 0;
+        // Limit must be between 1 and 100. If 0, we would not return anything. Negative is right out.
+        this.limit = limit.isPresent() && limit.get() < 101 && limit.get() > 0 ? limit.get() : 25;
+    }
 }

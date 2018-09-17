@@ -3,22 +3,30 @@ package com.godaddy.evapi.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.json.JacksonJsonParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.godaddy.evapi.model.CollisionModel;
+import com.godaddy.evapi.model.OrganizationInputModel;
 import com.godaddy.evapi.model.OrganizationListModel;
 import com.godaddy.evapi.model.OrganizationModel;
 import com.godaddy.evapi.service.IOrganizationService;
+
+import io.jsonwebtoken.Claims;
 
 @RestController
 @RequestMapping(value = "/org")
@@ -26,11 +34,13 @@ public class OrganizationController {
     @Autowired
     IOrganizationService organizationService;
     
+    private int offset;
+    private int limit;
+    
     @GetMapping(value="")
     public ResponseEntity<OrganizationListModel> GetOrganizationList(@RequestParam( value="offset") Optional<Integer> offset, @RequestParam( value="limit") Optional<Integer> limit) {
-        int os = offset.isPresent() ? offset.get() : 0;
-        int lim = limit.isPresent() && limit.get() < 101 ? limit.get() : 25;
-        OrganizationListModel orgList = organizationService.findAll(os, lim);
+        setOffsetLimit(offset,limit);
+        OrganizationListModel orgList = organizationService.findAll(this.offset, this.limit);
         if(orgList.getCount() < 1) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -39,13 +49,33 @@ public class OrganizationController {
     }
     
     @PostMapping(value="")
-    public void AddOrganization() { // (@RequestBody OrganizationDTO signature)
-        return;
+    //@RequestBody ApprovalDTO approvalDto
+    public ResponseEntity<String> AddOrganization(@RequestBody OrganizationInputModel organization) {
+        // Grab the auth token, convert to json, and get the ca value
+        Claims token = (Claims)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // TODO: GEt this once basic auth is setup properly 
+        String ca = "";
+        //String ca = (String)token.get("ca").toString();
+        
+        // Create our new id and setup the model to be stored
+        UUID id = UUID.randomUUID();        
+        OrganizationModel org = new OrganizationModel(id, organization.getOrganizationName(), organization.getCommonName(), organization.getSerialNumber(),
+                    organization.getLocalityName(), organization.getStateOrProvinceName(), organization.getCountryName(), ca);
+        
+        // Store these in the certificate record: 
+        //organization.getExpirationDate();
+        //organization.getIssuedDate();
+        // TODO:
+        // Insert organization record
+        
+        // Insert certificate record
+        
+        return new ResponseEntity<String>(id.toString(), HttpStatus.CREATED);
     }
     
     // TODO: File upload logic???
     
-    // This will only ever return ONE record
+    // This will only ever return ONE record - or at least it should
     @GetMapping(value="/{id}")
     public ResponseEntity<OrganizationModel> GetOrganization(@PathVariable(value = "id") String orgId) {
         OrganizationModel org = organizationService.findById(orgId);        
@@ -55,26 +85,21 @@ public class OrganizationController {
         
         return new ResponseEntity<OrganizationModel>(org, HttpStatus.OK);
     }
-    
+
+    // We do not support deletes.
     @DeleteMapping(value="/{id}")
-    public void DeleteOrganization(@PathVariable(value = "id") String orgId) {
-        // Make sure they own this record...
-        
-        // Connect to data store
-        
-        // Get record
-       
-        // Set status to removed
-        
-        // Update
-        
-        // Return
-        return;
+    public ResponseEntity<HttpStatus> DeleteOrganization(@PathVariable(value = "id") String orgId) {
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
+        
     
     @PutMapping(value="/{id}")
-    public void UpdateOrganization(@PathVariable(value = "id") String orgId) {
+    public ResponseEntity<HttpStatus> UpdateOrganization(@PathVariable(value = "id") String orgId) {
+        String principal = (String)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
         // Make sure they own this record...
+        
+        // Get record data from the body
         
         // Connect to data store
         
@@ -86,9 +111,20 @@ public class OrganizationController {
     @GetMapping(value="/name/{name}")
     public ResponseEntity<OrganizationListModel> GetOrganizationByName(@PathVariable(value="name") String name, 
                 @RequestParam( value="offset") Optional<Integer> offset, @RequestParam( value="limit") Optional<Integer> limit) {
-        int os = offset.isPresent() ? offset.get() : 0;
-        int lim = limit.isPresent() && limit.get() < 101 ? limit.get() : 25;
-        OrganizationListModel orgList = organizationService.findByCommonName(name, os, lim);
+        setOffsetLimit(offset,limit);
+        OrganizationListModel orgList = organizationService.findByOrganizationName(name, this.offset, this.limit);
+        if(orgList.getCount() < 1) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        
+        return new ResponseEntity<OrganizationListModel>(orgList, HttpStatus.OK);       
+    }
+    
+    @GetMapping(value="/commonname/{name}")
+    public ResponseEntity<OrganizationListModel> GetOrganizationByCommonName(@PathVariable(value="name") String name, 
+                @RequestParam( value="offset") Optional<Integer> offset, @RequestParam( value="limit") Optional<Integer> limit) {
+        setOffsetLimit(offset,limit);
+        OrganizationListModel orgList = organizationService.findByCommonName(name, this.offset, this.limit);
         if(orgList.getCount() < 1) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -99,56 +135,116 @@ public class OrganizationController {
     @GetMapping(value="/serial/{serialNumber}")
     public ResponseEntity<OrganizationListModel> GetOrganizationBySerialNumber(@PathVariable(value="serialNumber") String serialNumber, 
                 @RequestParam( value="offset") Optional<Integer> offset, @RequestParam( value="limit") Optional<Integer> limit) {
-        int os = offset.isPresent() ? offset.get() : 0;
-        int lim = limit.isPresent() && limit.get() < 101 ? limit.get() : 25;
-        OrganizationListModel orgList = organizationService.findBySerialNumber(serialNumber, os, lim);
+        setOffsetLimit(offset,limit);
+        OrganizationListModel orgList = organizationService.findBySerialNumber(serialNumber, this.offset, this.limit);
         if(orgList.getCount() < 1) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         
-        return new ResponseEntity<OrganizationListModel>(orgList, HttpStatus.OK);       
+        return new ResponseEntity<OrganizationListModel>(orgList, HttpStatus.OK);
     }
 
     @GetMapping(value="/{name}/{serialNumber}/{country}")
-    public void GetOrganizationByNameSerialNumberCountry(@PathVariable(value="name") String orgName, 
+    public ResponseEntity<OrganizationListModel> GetOrganizationByNameSerialNumberCountry(@PathVariable(value="name") String name, 
                 @PathVariable(value="serialNumber") String serialNumber, @PathVariable(value="country") String country, 
                 @RequestParam( value="offset") Optional<Integer> offset, @RequestParam( value="limit") Optional<Integer> limit) {
-        // Connect to data store
+        setOffsetLimit(offset,limit);
+        OrganizationListModel orgList = organizationService.findByNameSerialNumberCountry(name, serialNumber, country,this.offset, this.limit);
+        if(orgList.getCount() < 1) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         
-        // Get records
+        return new ResponseEntity<OrganizationListModel>(orgList, HttpStatus.OK);
     }
     
     @GetMapping(value="/{name}/{serialNumber}/{country}/{state}")
-    public void GetOrganizationByNameSerialNumberCountryState(@PathVariable(value="name") String orgName, 
+    public ResponseEntity<OrganizationListModel> GetOrganizationByNameSerialNumberCountryState(@PathVariable(value="name") String name, 
                 @PathVariable(value="serialNumber") String serialNumber, @PathVariable(value="country") String country,
                 @PathVariable(value="state") String state, 
                 @RequestParam( value="offset") Optional<Integer> offset, @RequestParam( value="limit") Optional<Integer> limit) {
-        // Connect to data store
+        setOffsetLimit(offset,limit);
+        OrganizationListModel orgList = organizationService.findByNameSerialNumberCountryState(name, serialNumber, country, state, this.offset, this.limit);
+        if(orgList.getCount() < 1) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         
-        // Get records
+        return new ResponseEntity<OrganizationListModel>(orgList, HttpStatus.OK);
     }
-
     
     // Resource Actions
-    @GetMapping(value="/collisionDetect/{organizationName}")
-    public void collisionDetectByOrganizationName(@PathVariable(value="name") String orgName) {
+    @GetMapping(value="/collisionDetect/{name}")
+    public CollisionModel collisionDetectByCommonName(@PathVariable(value="name") String name) {
+        CollisionModel collision = new CollisionModel();
+        OrganizationListModel orgList = organizationService.findByOrganizationName(name, 0, 1);
+        if(orgList.getCount() < 1) {
+            collision.setCollision(true);
+        }
         
+        return collision;
     }
     
-    @GetMapping(value="/collisionDetect/serial/{serialNumber}")
-    public void collisionDetectBySerialNumber(@PathVariable(value="serialNumber") String serialNumber) {
+    @GetMapping(value="/collisionDetect/commonname/{commonName}")
+    public CollisionModel collisionDetectByOrganizationName(@PathVariable(value="name") String commonName) {
+        CollisionModel collision = new CollisionModel();
+        // TODO: Fix this...
+        OrganizationListModel orgList = organizationService.findByCommonName(commonName, 0, 1);
+        if(orgList.getCount() < 1) {
+            collision.setCollision(true);
+        }
         
+        return collision;
+    }
+    
+    
+    @GetMapping(value="/collisionDetect/serial/{serialNumber}")
+    public CollisionModel collisionDetectBySerialNumber(@PathVariable(value="serialNumber") String serialNumber) {
+        CollisionModel collision = new CollisionModel();
+        OrganizationListModel orgList = organizationService.findBySerialNumber(serialNumber, 0, 1);
+        if(orgList.getCount() < 1) {
+            collision.setCollision(true);
+        }
+        
+        return collision;        
+    }
+    
+    @GetMapping(value="/collisionDetect/{name}/{serialNumber}/{country}")
+    public CollisionModel collisionDetectByAll(@PathVariable(value="name") String name, 
+                @PathVariable(value="serialNumber") String serialNumber, @PathVariable(value="country") String country
+                ) {
+        CollisionModel collision = new CollisionModel();
+        OrganizationListModel orgList = organizationService.findByNameSerialNumberCountry(name, serialNumber, country, 0, 1);
+        if(orgList.getCount() < 1) {
+            collision.setCollision(true);
+        }
+        
+        return collision;        
     }
     
     @GetMapping(value="/collisionDetect/{name}/{serialNumber}/{country}/{state}")
-    public void collisionDetectByAll(@PathVariable(value="name") String orgName, 
+    public CollisionModel collisionDetectByAll(@PathVariable(value="name") String name, 
                 @PathVariable(value="serialNumber") String serialNumber, @PathVariable(value="country") String country,
                 @PathVariable(value="state") String state) {
+        CollisionModel collision = new CollisionModel();
+        OrganizationListModel orgList = organizationService.findByNameSerialNumberCountryState(name, serialNumber, country, state, 0, 1);
+        if(orgList.getCount() < 1) {
+            collision.setCollision(true);
+        }
+        
+        return collision;        
+    }
+    
+    @GetMapping(value="/collisionDetect/{dfgdrgre}")
+    public void collision() {
         
     }
     
-    @GetMapping(value="/collisionDetect/{}")
-    public void collision() {
-        
+    // PRIVATE CALLS / HELPER FUNCTIONS
+    
+    // Validate/sanity check the offset and limit values
+    private void setOffsetLimit(Optional<Integer> offset, Optional<Integer> limit) {
+        // Offset must not be negative
+        this.offset =  offset.isPresent() && offset.get() > 0 ? offset.get() : 0;
+        // Limit must be between 1 and 100. If 0, we would not return anything. Negative is right out.
+        this.limit = limit.isPresent() && limit.get() < 101 && limit.get() > 0 ? limit.get() : 25;
     }
 }

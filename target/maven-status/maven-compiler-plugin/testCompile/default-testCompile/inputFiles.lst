@@ -1,6 +1,10 @@
+/Users/asink/Documents/GitHub/ev-api/src/test/java/com/godaddy/evapi/service/TestCertificateService.java
 /Users/asink/Documents/GitHub/ev-api/src/test/java/com/godaddy/evapi/controller/OrganizationControllerTest.java
+/Users/asink/Documents/GitHub/ev-api/src/test/java/com/godaddy/evapi/service/TestOrganizationService.java
+/Users/asink/Documents/GitHub/ev-api/src/test/java/com/godaddy/evapi/service/TestBlacklistService.java
 /Users/asink/Documents/GitHub/ev-api/src/test/java/com/godaddy/evapi/controller/ValidationControllerTest.java
 /Users/asink/Documents/GitHub/ev-api/src/test/java/com/godaddy/evapi/controller/CNameControllerTest.java
 /Users/asink/Documents/GitHub/ev-api/src/test/java/com/godaddy/evapi/security/BasicAuthenticationProviderTest.java
+/Users/asink/Documents/GitHub/ev-api/src/test/java/com/godaddy/evapi/service/OrganizationServiceTest.java
 /Users/asink/Documents/GitHub/ev-api/src/test/java/com/godaddy/evapi/controller/LoginControllerTest.java
 /Users/asink/Documents/GitHub/ev-api/src/test/java/com/godaddy/evapi/security/TokenAuthenticationProviderTest.java

@@ -2,10 +2,7 @@ package com.godaddy.evapi.model;
 
 import java.util.UUID;
 
-// TODO: Remove commented code
-//@Document(indexName="organization", type="record")
 public class OrganizationModel extends BaseModel {
-//    @Id
     private UUID id;
     private String organizationName;
     private String commonName;
@@ -25,6 +22,7 @@ public class OrganizationModel extends BaseModel {
     }
     
     public OrganizationModel( String orgName, String cName, String serialNum, String locality, String state, String country, String ca) {
+        this.id = UUID.randomUUID();
         this.setValues(orgName, cName, serialNum, locality, state, country, ca);
     }
     
@@ -101,9 +99,6 @@ public class OrganizationModel extends BaseModel {
         this.stateOrProvinceName = state;
         this.countryName = country;
         this.ca = ca;
-        if(this.id == null) {
-            this.id = UUID.randomUUID();
-        }
     }
     
 }

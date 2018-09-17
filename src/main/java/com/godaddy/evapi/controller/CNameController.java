@@ -1,39 +1,68 @@
 package com.godaddy.evapi.controller;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.jsonwebtoken.Claims;
+import com.godaddy.evapi.model.BlacklistDTOModel;
+import com.godaddy.evapi.model.BlacklistListModel;
+import com.godaddy.evapi.model.BlacklistModel;
+import com.godaddy.evapi.service.IBlacklistService;
 
 @RestController
 @RequestMapping(value = "/cname")
 public class CNameController {
-    @Value( "${system.message:ThisIsADefaultTest}" )
-    private String message;
+    @Autowired
+    IBlacklistService blacklistService;
+    
+    // Return not implemented for the basic CRUD operations.
+    @GetMapping("")
+    public ResponseEntity<HttpStatus> getAll() {
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> delete() {
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<HttpStatus> update() {
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+    
+    @PostMapping("")
+    public ResponseEntity<HttpStatus> createEntry() {
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<BlacklistModel> getById(@PathVariable(value="id") String id) {
+        BlacklistModel result = blacklistService.findById(id);
+        if(result == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<BlacklistModel>(result, HttpStatus.OK);
+    }
     
     @GetMapping("/flaglist/{cname}")
-    public String CheckBlacklistByCName(@PathVariable(value="cname") String cName) {
-        
-        // TODO: Once we decide on a datastore and query mechanism, build all this out.
-        if(cName == null || cName.length() < 3) {
-            // Return false - no match
+    public BlacklistDTOModel getBlacklistByCName(@PathVariable(value="cname") String cName) {
+        BlacklistDTOModel result = new BlacklistDTOModel();
+        if(cName != null && cName.length() > 2) {
+            BlacklistListModel entries = blacklistService.findByCommonName(cName,0, 1);
+            // If any entries, return true
+            if(entries.getCount() > 0) {
+                result.setBlacklisted(true);
+            }
         }
-        
-        // TODO: Get list from data store / 
-        // TODO: Check for our entry
-        
-        // TODO: For now output this so we can validate stuff
-        Claims claims = (Claims)SecurityContextHolder.getContext().getAuthentication().getCredentials();
-        message = claims.getSubject() + " " + claims.getExpiration().toString();
-        
-        
-        // If any entries, return true, otherwise false.
-        return message;
+                
+        return result;
     }
 }
