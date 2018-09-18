@@ -17,17 +17,8 @@ import com.godaddy.evapi.model.OrganizationModel;
 public class TestOrganizationService implements IOrganizationService {
 
     @Override
-    public OrganizationModel save(OrganizationModel org) {
-        OrganizationModel orgModel = new OrganizationModel();
-        orgModel.setCa(org.getCa());
-        orgModel.setCommonName(org.getCommonName());
-        orgModel.setCountryName(org.getCountryName());
-        orgModel.setLocalityName(org.getLocalityName());
-        orgModel.setOrganizationName(org.getOrganizationName());
-        orgModel.setSerialNumber(org.getSerialNumber());
-        orgModel.setStateOrProvinceName(org.getStateOrProvinceName());
-        orgModel.setId(org.getId());
-        return orgModel;
+    public boolean save(OrganizationModel org) {
+        return true;
     }
 
     @Override

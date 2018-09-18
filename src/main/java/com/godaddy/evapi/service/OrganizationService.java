@@ -2,12 +2,15 @@ package com.godaddy.evapi.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.transport.TransportClient;
@@ -39,13 +42,20 @@ public class OrganizationService implements IOrganizationService {
     //    this.orgRepository = organizationRepository;
     //}
     
+    // Write a new record to the index
     @Override
-    public OrganizationModel save(OrganizationModel org) {
-        // TODO Auto-generated method stub
-        //return (OrganizationModel) orgRepository.save(org);
-        //IndexRequest request = new IndexRequest("organization", "record", org.getId()).source(ObjectMapper.convertValue(org, Map.class));
-        
-        return null;
+    public boolean save(OrganizationModel org) {
+        boolean result = false;
+        // We need to take out id, since ES stores it as _id. Would duplicate the data.
+        Map data = objectMapper.convertValue(org, Map.class);
+        data.remove("id");
+        IndexRequest request = new IndexRequest("organization", "record", org.getId().toString()).source(data);
+        IndexResponse response = transportClient.index(request).actionGet();
+        if(response.getResult() == DocWriteResponse.Result.CREATED || 
+           response.getResult() == DocWriteResponse.Result.UPDATED) {
+            result = true;
+        }
+        return result;
     }
 
     @Override

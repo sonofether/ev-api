@@ -49,28 +49,35 @@ public class OrganizationController {
     }
     
     @PostMapping(value="")
-    //@RequestBody ApprovalDTO approvalDto
     public ResponseEntity<String> AddOrganization(@RequestBody OrganizationInputModel organization) {
+        boolean success = false;
         // Grab the auth token, convert to json, and get the ca value
-        Claims token = (Claims)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        // TODO: GEt this once basic auth is setup properly 
-        String ca = "";
-        //String ca = (String)token.get("ca").toString();
+        Claims token = (Claims)SecurityContextHolder.getContext().getAuthentication().getCredentials();
+        // TODO: GET this once basic auth is setup properly 
+        //String ca = "Adam's Certs Inc";
+        String ca = (String)token.get("ca").toString();
         
-        // Create our new id and setup the model to be stored
-        UUID id = UUID.randomUUID();        
-        OrganizationModel org = new OrganizationModel(id, organization.getOrganizationName(), organization.getCommonName(), organization.getSerialNumber(),
-                    organization.getLocalityName(), organization.getStateOrProvinceName(), organization.getCountryName(), ca);
+        // Create our new id
+        UUID id = UUID.randomUUID();
+        // Validate fields.
+        if(validateNewRecord(organization.getOrganizationName(), organization.getCommonName())) {
+            // Setup the model to be stored                   
+            OrganizationModel org = new OrganizationModel(id, organization.getOrganizationName(), organization.getCommonName(), organization.getSerialNumber(),
+                        organization.getLocalityName(), organization.getStateOrProvinceName(), organization.getCountryName(), ca);
+            boolean result = organizationService.save(org);
+            
+            if(result == true) {
+                // TODO: Create certificate record
+                // TODO: Write to the block chain
+                //organization.getExpirationDate();
+                //organization.getIssuedDate();
+                
+                success = true;
+                return new ResponseEntity<String>(id.toString(), HttpStatus.CREATED);
+            }
+        }
         
-        // Store these in the certificate record: 
-        //organization.getExpirationDate();
-        //organization.getIssuedDate();
-        // TODO:
-        // Insert organization record
-        
-        // Insert certificate record
-        
-        return new ResponseEntity<String>(id.toString(), HttpStatus.CREATED);
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     
     // TODO: File upload logic???
@@ -176,19 +183,18 @@ public class OrganizationController {
     public CollisionModel collisionDetectByCommonName(@PathVariable(value="name") String name) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findByOrganizationName(name, 0, 1);
-        if(orgList.getCount() < 1) {
+        if(orgList.getCount() > 0) {
             collision.setCollision(true);
         }
         
         return collision;
     }
     
-    @GetMapping(value="/collisionDetect/commonname/{commonName}")
-    public CollisionModel collisionDetectByOrganizationName(@PathVariable(value="name") String commonName) {
+    @GetMapping(value="/collisionDetect/commonName/{commonName}")
+    public CollisionModel collisionDetectByOrganizationName(@PathVariable(value="commonName") String commonName) {
         CollisionModel collision = new CollisionModel();
-        // TODO: Fix this...
         OrganizationListModel orgList = organizationService.findByCommonName(commonName, 0, 1);
-        if(orgList.getCount() < 1) {
+        if(orgList.getCount() > 0) {
             collision.setCollision(true);
         }
         
@@ -200,7 +206,7 @@ public class OrganizationController {
     public CollisionModel collisionDetectBySerialNumber(@PathVariable(value="serialNumber") String serialNumber) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findBySerialNumber(serialNumber, 0, 1);
-        if(orgList.getCount() < 1) {
+        if(orgList.getCount() > 0) {
             collision.setCollision(true);
         }
         
@@ -213,7 +219,7 @@ public class OrganizationController {
                 ) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findByNameSerialNumberCountry(name, serialNumber, country, 0, 1);
-        if(orgList.getCount() < 1) {
+        if(orgList.getCount() > 0) {
             collision.setCollision(true);
         }
         
@@ -226,18 +232,13 @@ public class OrganizationController {
                 @PathVariable(value="state") String state) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findByNameSerialNumberCountryState(name, serialNumber, country, state, 0, 1);
-        if(orgList.getCount() < 1) {
+        if(orgList.getCount() > 0) {
             collision.setCollision(true);
         }
         
         return collision;        
     }
-    
-    @GetMapping(value="/collisionDetect/{dfgdrgre}")
-    public void collision() {
         
-    }
-    
     // PRIVATE CALLS / HELPER FUNCTIONS
     
     // Validate/sanity check the offset and limit values
@@ -246,5 +247,19 @@ public class OrganizationController {
         this.offset =  offset.isPresent() && offset.get() > 0 ? offset.get() : 0;
         // Limit must be between 1 and 100. If 0, we would not return anything. Negative is right out.
         this.limit = limit.isPresent() && limit.get() < 101 && limit.get() > 0 ? limit.get() : 25;
+    }
+    
+    private boolean validateNewRecord(String name, String cName) {
+        // TODO: We may need to be more granular when checking the organization name - Might need region.
+        boolean result = false;
+        OrganizationListModel orgList = organizationService.findByOrganizationName(name, this.offset, this.limit);
+        if(orgList.getCount() < 1) {
+            orgList = organizationService.findByCommonName(cName, 0, 1);
+            if(orgList.getCount() < 1) {
+                result = true;
+            }
+        }
+        
+        return result;        
     }
 }

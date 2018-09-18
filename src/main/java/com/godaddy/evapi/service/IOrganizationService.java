@@ -8,7 +8,7 @@ import com.godaddy.evapi.model.OrganizationModel;
 public interface IOrganizationService {
 
     // Create/Update
-    OrganizationModel save(OrganizationModel org);
+    boolean save(OrganizationModel org);
     // Delete
     boolean delete(String id);
     // Read/Get

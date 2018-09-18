@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -51,20 +52,16 @@ public class AuthenticationFilter extends GenericFilterBean {
                 return;
             } else if (token.isPresent()) {
                 logger.debug("Trying to authenticate user by X-Auth-Token method. Token: {}", token);
-                // Do token auth
+                // Do jwt auth
                 validateToken(token);
             }
             
-            logger.debug("AuthenticationFilter is passing request down the filter chain");
             chain.doFilter(request, response);
         }
-        catch (InternalAuthenticationServiceException iasex) {
-            SecurityContextHolder.clearContext();
-            httpResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
         catch (AuthenticationException aex) {
+            // Something went wrong. Do not let them in.
             SecurityContextHolder.clearContext();
-            httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, aex.getMessage());
+            httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
         }
     }
     

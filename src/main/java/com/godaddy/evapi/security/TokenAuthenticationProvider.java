@@ -22,7 +22,9 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import com.google.common.base.Optional;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureException;
 
 public class TokenAuthenticationProvider implements AuthenticationProvider {
     @Value( "${jwt.public.key.file}" )
@@ -43,8 +45,7 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
             X509EncodedKeySpec spec = new X509EncodedKeySpec(content);
             RSAPublicKey publicKey = (RSAPublicKey)keyFactory.generatePublic(spec);
             // As long as this does not exception, we pass validation.
-            Claims claims = Jwts.parser().setSigningKey(publicKey)
-                    .parseClaimsJws(token.get()).getBody();
+            Claims claims = Jwts.parser().setSigningKey(publicKey).parseClaimsJws(token.get()).getBody();
             // Check expires stamp and reject/redirect if expired.
             if (claims.getExpiration().before(new Date())) {
                 return null;
@@ -55,14 +56,9 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
             tokenAuth.setAuthenticated(true);
             
             return tokenAuth;
-        } catch (NoSuchAlgorithmException nsaex) {
+        } catch (NoSuchAlgorithmException | SignatureException | InvalidKeySpecException | IOException | ArrayIndexOutOfBoundsException | ExpiredJwtException nsaex) {
+            // We don't really care why we failed. Just that we failed.
             nsaex.printStackTrace();
-        } catch (InvalidKeySpecException iksex) {
-            iksex.printStackTrace();
-        } catch (IOException iex) {
-            iex.printStackTrace();
-        } catch (ArrayIndexOutOfBoundsException oobex) {
-            oobex.printStackTrace();
         }
         
         return null;

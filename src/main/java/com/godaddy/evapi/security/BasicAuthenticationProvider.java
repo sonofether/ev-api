@@ -102,7 +102,8 @@ public class BasicAuthenticationProvider implements AuthenticationProvider {
             RSAPrivateKey key = (RSAPrivateKey)keyFactory.generatePrivate(privSpec);
             Date now = new Date();
             // Generate the jwt
-            String token = Jwts.builder().setIssuer("TestIssuance").setSubject("evapi auth").claim("user", user)
+            String token = Jwts.builder().setIssuer("TestIssuance").setSubject("evapi auth")
+                        .claim("user", user).claim("ca", "Adam's CA from JWT")
                         .setIssuedAt(now).setExpiration(DateUtils.addMinutes(now, timeout))
                         .signWith(SignatureAlgorithm.RS256, key).compact();
             
