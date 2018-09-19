@@ -102,17 +102,7 @@ public class OrganizationController {
     
     @PutMapping(value="/{id}")
     public ResponseEntity<HttpStatus> UpdateOrganization(@PathVariable(value = "id") String orgId) {
-        String principal = (String)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
-        // Make sure they own this record...
-        
-        // Get record data from the body
-        
-        // Connect to data store
-        
-        // Get record
-       
-        // Update the record with the new data - What do we want to lalow to be updated?
     }
 
     @GetMapping(value="/name/{name}")
@@ -180,7 +170,7 @@ public class OrganizationController {
     
     // Resource Actions
     @GetMapping(value="/collisionDetect/{name}")
-    public CollisionModel collisionDetectByCommonName(@PathVariable(value="name") String name) {
+    public CollisionModel CollisionDetectByCommonName(@PathVariable(value="name") String name) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findByOrganizationName(name, 0, 1);
         if(orgList.getCount() > 0) {
@@ -191,7 +181,7 @@ public class OrganizationController {
     }
     
     @GetMapping(value="/collisionDetect/commonName/{commonName}")
-    public CollisionModel collisionDetectByOrganizationName(@PathVariable(value="commonName") String commonName) {
+    public CollisionModel CollisionDetectByOrganizationName(@PathVariable(value="commonName") String commonName) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findByCommonName(commonName, 0, 1);
         if(orgList.getCount() > 0) {
@@ -203,7 +193,7 @@ public class OrganizationController {
     
     
     @GetMapping(value="/collisionDetect/serial/{serialNumber}")
-    public CollisionModel collisionDetectBySerialNumber(@PathVariable(value="serialNumber") String serialNumber) {
+    public CollisionModel CollisionDetectBySerialNumber(@PathVariable(value="serialNumber") String serialNumber) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findBySerialNumber(serialNumber, 0, 1);
         if(orgList.getCount() > 0) {
@@ -214,7 +204,7 @@ public class OrganizationController {
     }
     
     @GetMapping(value="/collisionDetect/{name}/{serialNumber}/{country}")
-    public CollisionModel collisionDetectByAll(@PathVariable(value="name") String name, 
+    public CollisionModel CollisionDetectByAll(@PathVariable(value="name") String name, 
                 @PathVariable(value="serialNumber") String serialNumber, @PathVariable(value="country") String country
                 ) {
         CollisionModel collision = new CollisionModel();
@@ -227,7 +217,7 @@ public class OrganizationController {
     }
     
     @GetMapping(value="/collisionDetect/{name}/{serialNumber}/{country}/{state}")
-    public CollisionModel collisionDetectByAll(@PathVariable(value="name") String name, 
+    public CollisionModel CollisionDetectByAll(@PathVariable(value="name") String name, 
                 @PathVariable(value="serialNumber") String serialNumber, @PathVariable(value="country") String country,
                 @PathVariable(value="state") String state) {
         CollisionModel collision = new CollisionModel();
