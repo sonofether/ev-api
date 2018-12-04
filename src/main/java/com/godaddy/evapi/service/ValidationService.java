@@ -12,35 +12,38 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.godaddy.evapi.model.CertificateListModel;
-import com.godaddy.evapi.model.CertificateModel;
 import com.godaddy.evapi.model.OrganizationListModel;
 import com.godaddy.evapi.model.OrganizationModel;
+import com.godaddy.evapi.model.ValidationInputModel;
+import com.godaddy.evapi.model.ValidationItemModel;
+import com.godaddy.evapi.model.ValidationListModel;
 
 @Service
-public class CertificateService implements ICertificateService {
-
+public class ValidationService implements IValidationService {
+    
     @Autowired
     TransportClient transportClient;
     
-    static final String INDEX = "certificate";
+    static final String INDEX = "validation";
     static final String TYPE = "record";
     
     ObjectMapper objectMapper = new ObjectMapper();    
 
     @Override
-    public boolean save(CertificateModel certificate) {
+    public boolean save(ValidationItemModel vi) {
         boolean result = false;
         // We need to take out id, since ES stores it as _id. Would duplicate the data.
-        Map data = objectMapper.convertValue(certificate, Map.class);
+        Map data = objectMapper.convertValue(vi, Map.class);
         data.remove("id");
-        IndexRequest request = new IndexRequest(INDEX, TYPE, certificate.getId().toString()).source(data);
+        IndexRequest request = new IndexRequest(INDEX, TYPE, vi.getId().toString()).source(data);
         IndexResponse response = transportClient.index(request).actionGet();
         if(response.getResult() == DocWriteResponse.Result.CREATED || 
            response.getResult() == DocWriteResponse.Result.UPDATED) {
@@ -60,8 +63,8 @@ public class CertificateService implements ICertificateService {
     }
 
     @Override
-    public CertificateModel findById(String id) {
-        CertificateModel certificate = null;
+    public ValidationItemModel findById(String id) {
+        ValidationItemModel vi = null;
         
         GetRequest request = new GetRequest(INDEX, TYPE, id);
         GetResponse response = transportClient.get(request).actionGet();
@@ -69,47 +72,59 @@ public class CertificateService implements ICertificateService {
             String data = response.getSourceAsString();
             ObjectMapper objectMapper = new ObjectMapper();
             try {
-                certificate = objectMapper.readValue(data, CertificateModel.class);
+                vi = objectMapper.readValue(data, ValidationItemModel.class);
                 // id is stored as _id, so we need to grab it
-                certificate.setId(UUID.fromString(response.getId()));
+                vi.setId(UUID.fromString(response.getId()));
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
 
-        return certificate;
+        return vi;
     }
 
     @Override
-    public CertificateListModel findAll(int offset, int limit) {
-        System.out.println("ASINK: offset=" + Integer.toString(offset) + " limit=" + Integer.toString(limit) );
+    public ValidationListModel findAll(int offset, int limit) {
         SearchResponse response = transportClient.prepareSearch(INDEX).setTypes(TYPE).setFrom(offset).setSize(limit).get();
         return findRecords(response, offset, limit);
     }
+    
+    @Override
+    public ValidationListModel findByCertificateId(String certificateId, int offset, int limit) {
+        SearchResponse response = transportClient.prepareSearch(INDEX)
+                    .setTypes(TYPE)
+                    .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                    .setQuery(QueryBuilders.matchQuery("certificateId", certificateId))
+                    .setFrom(offset).setSize(limit).setExplain(true)
+                    .get();
+        return findRecords(response, offset, limit);
 
-    private CertificateListModel findRecords(SearchResponse response, int offset, int limit) {
-        CertificateListModel certificateList = new CertificateListModel();
-        List<CertificateModel> certificates = new ArrayList<CertificateModel>();
+    }
+
+    // PRIVATE FUNCTION CALLS / HELPERS
+    
+    private ValidationListModel findRecords(SearchResponse response, int offset, int limit) {
+        ValidationListModel viList = new ValidationListModel();
+        List<ValidationItemModel> vis = new ArrayList<ValidationItemModel>();
         if(response.getHits().totalHits > 0) {
             SearchHit[] hits = response.getHits().getHits();
-            try {
+            try {                
                 for(int ii = 0; ii < hits.length; ii++) {
-                    CertificateModel certificate = objectMapper.readValue(hits[ii].getSourceAsString(), CertificateModel.class);
+                    ValidationItemModel viModel = objectMapper.readValue(hits[ii].getSourceAsString(), ValidationItemModel.class);
                     // id is stored as _id, we need to do a translation
-                    certificate.setId(UUID.fromString(hits[ii].getId()));
-                    certificates.add(certificate);
+                    viModel.setId(UUID.fromString(hits[ii].getId()));
+                    vis.add(viModel);
                 }
                 
-                certificateList.setCertificates(certificates);
-                certificateList.setCount(certificates.size());
-                certificateList.setOffset(offset);
-                certificateList.setLimit(limit);
+                viList.setValidationItems(vis);
+                viList.setCount(vis.size());
+                viList.setOffset(offset);
+                viList.setLimit(limit);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
         
-        return certificateList;
+        return viList;
     }
-
 }

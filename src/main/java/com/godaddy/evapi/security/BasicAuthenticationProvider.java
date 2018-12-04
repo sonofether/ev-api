@@ -1,20 +1,19 @@
 package com.godaddy.evapi.security;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.time.DateUtils;
-import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -25,7 +24,6 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 
 import com.google.common.base.Optional;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
@@ -36,8 +34,12 @@ public class BasicAuthenticationProvider implements AuthenticationProvider {
     @Value("${token.timeout.minutes}")
     private int timeout;
     
+    @Value("${auth.file.name}")
+    private String fileName;
+    
     private String user = "";
     private String pass = "";
+    private String ca = "";
     
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -68,8 +70,10 @@ public class BasicAuthenticationProvider implements AuthenticationProvider {
     public boolean supports(Class<?> authentication) {
         return authentication.equals(UsernamePasswordAuthenticationToken.class);
     }
-
+    
+    // Private and helper functions
     private boolean AuthenticateUser(String basicAuth) {
+          boolean isValid = false;
         // Header is in the format "Basic Base64EncodedString"
         // We need to extract data before decoding it back to original string
         try {
@@ -79,21 +83,38 @@ public class BasicAuthenticationProvider implements AuthenticationProvider {
             byte[] bytes = java.util.Base64.getMimeDecoder().decode(authInfo);
             String decodedAuth = new String(bytes);
             StringTokenizer tokenizer = new StringTokenizer(decodedAuth, ":");
-            user = tokenizer.nextToken();
-            pass = tokenizer.nextToken();
+            user = tokenizer.nextToken().trim();
+            pass = tokenizer.nextToken().trim();
         } catch (Exception ex) {
             ex.printStackTrace();
-            return false;
+            return isValid;
         }
         
-        // TODO: Validate the decoded values against a data store
-        // TODO: Figure out level of auth
-
-        // TODO: Return true if auth succeeds, false otherwise
+        // Validate the decoded values against the stored values
+        try {
+            BufferedReader buffer = new BufferedReader(new FileReader(fileName));
+            String line = null;
+            String hashedUser = OneWayEncryption.HashValue(user, OneWayEncryption.DEFAULT_SALT.getBytes());
+            do {
+                line = buffer.readLine();
+                if(line != null) {
+                    String[] values = line.split("\t");
+                    if(hashedUser.equals(values[0].trim())) {
+                        String encryptedPassword = OneWayEncryption.HashValue(pass, java.util.Base64.getMimeDecoder().decode(values[2].trim()));
+                        isValid = encryptedPassword.equals(values[1].trim());
+                        ca = values[3].trim();
+                        break;
+                    }
+                }
+            } while (line != null);
+            buffer.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         
-        return true;
+        return isValid;
     }
-    
+        
     private String GenerateToken() {
         try {
             byte[] privateBytes = Files.readAllBytes(Paths.get(privateKeyFile));
@@ -103,7 +124,7 @@ public class BasicAuthenticationProvider implements AuthenticationProvider {
             Date now = new Date();
             // Generate the jwt
             String token = Jwts.builder().setIssuer("TestIssuance").setSubject("evapi auth")
-                        .claim("user", user).claim("ca", "Adam's CA from JWT")
+                        .claim("user", user).claim("ca", ca)
                         .setIssuedAt(now).setExpiration(DateUtils.addMinutes(now, timeout))
                         .signWith(SignatureAlgorithm.RS256, key).compact();
             

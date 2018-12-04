@@ -34,13 +34,6 @@ public class OrganizationService implements IOrganizationService {
     static final String TYPE = "record";
     
     ObjectMapper objectMapper = new ObjectMapper();    
-
-    // TODO Remove this
-    //private OrganizationRepository orgRepository;
-    
-    //public void setOrganizationRepository(OrganizationRepository organizationRepository) {
-    //    this.orgRepository = organizationRepository;
-    //}
     
     // Write a new record to the index
     @Override
@@ -49,7 +42,7 @@ public class OrganizationService implements IOrganizationService {
         // We need to take out id, since ES stores it as _id. Would duplicate the data.
         Map data = objectMapper.convertValue(org, Map.class);
         data.remove("id");
-        IndexRequest request = new IndexRequest("organization", "record", org.getId().toString()).source(data);
+        IndexRequest request = new IndexRequest(INDEX, TYPE, org.getId().toString()).source(data);
         IndexResponse response = transportClient.index(request).actionGet();
         if(response.getResult() == DocWriteResponse.Result.CREATED || 
            response.getResult() == DocWriteResponse.Result.UPDATED) {

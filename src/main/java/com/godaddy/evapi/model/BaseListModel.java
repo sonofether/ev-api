@@ -1,8 +1,6 @@
 package com.godaddy.evapi.model;
 
-
 public class BaseListModel extends BaseModel{
-    // TODO: Do we need links with next/prev?
     private int limit;
     private int offset;
     private int count;

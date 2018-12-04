@@ -28,10 +28,13 @@ import com.google.common.base.Optional;
 public class AuthenticationFilter extends GenericFilterBean {
     
     private final static Logger logger = LoggerFactory.getLogger(AuthenticationFilter.class);
+    
     private AuthenticationManager authenticationManager;
+    private UrlPathHelper urlHelper;
     
     public AuthenticationFilter(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
+        this.urlHelper = new UrlPathHelper();
     }
     
     @Override
@@ -42,7 +45,7 @@ public class AuthenticationFilter extends GenericFilterBean {
         Optional<String> basicAuth = Optional.fromNullable(httpRequest.getHeader("Authorization"));
         Optional<String> token = Optional.fromNullable(httpRequest.getHeader("X-Auth-Token"));
         
-        String resourcePath = new UrlPathHelper().getPathWithinApplication(httpRequest);
+        String resourcePath = urlHelper.getPathWithinApplication(httpRequest);
 
         try {
             if (postToLogin(httpRequest, resourcePath)) {
@@ -94,8 +97,6 @@ public class AuthenticationFilter extends GenericFilterBean {
     }
     
     public boolean postToLogin(HttpServletRequest httpRequest, String path) {
-        // TODO: Handle this correctly
-        //return httpRequest.getMethod().equals("POST") && path.equalsIgnoreCase("login");
-        return httpRequest.getMethod().equals("POST") && path.contains("login");
+        return httpRequest.getMethod().equals("POST") && path.equalsIgnoreCase("/login");
     }
 }

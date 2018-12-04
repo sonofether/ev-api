@@ -6,6 +6,7 @@ import java.util.UUID;
 public class CertificateModel extends BaseModel {
     private UUID id;
     private String organizationName;
+    private String ca;
     private UUID organizationId;
     private String commonName;
     private Date expiresDate;
@@ -17,14 +18,14 @@ public class CertificateModel extends BaseModel {
         // Default constructor. Do nothing.
     }
   
-    public CertificateModel(UUID id, UUID organizationId, String organizationName, String commonName, Date expiresDate, Date issuedDate, int status, String validationLevel) {
+    public CertificateModel(UUID id, UUID organizationId, String organizationName, String ca, String commonName, Date expiresDate, Date issuedDate, int status, String validationLevel) {
         this.id = id;
-        setupRecord(organizationId, organizationName, commonName, expiresDate, issuedDate, status, validationLevel);
+        setupRecord(organizationId, organizationName, ca, commonName, expiresDate, issuedDate, status, validationLevel);
     }
   
-    public CertificateModel(UUID organizationId, String organizationName, String commonName, Date expiresDate, Date issuedDate, int status, String validationLevel) {
+    public CertificateModel(UUID organizationId, String organizationName, String ca, String commonName, Date expiresDate, Date issuedDate, int status, String validationLevel) {
         this.id = UUID.randomUUID();
-        setupRecord(organizationId, organizationName, commonName, expiresDate, issuedDate, status, validationLevel);
+        setupRecord(organizationId, organizationName, ca, commonName, expiresDate, issuedDate, status, validationLevel);
     }
   
     
@@ -47,7 +48,15 @@ public class CertificateModel extends BaseModel {
         this.organizationName = organizationName;
     }
     
+    public String getCa() {
+        return ca;
+    }
     
+    
+    public void setCa(String ca) {
+        this.ca = ca;
+    }
+ 
     public UUID getOrganizationId() {
         return organizationId;
     }
@@ -109,9 +118,10 @@ public class CertificateModel extends BaseModel {
 
     
     //PRIVATE FUNCTIONS / HELPERS
-    private void setupRecord(UUID organizationId, String organizationName, String commonName, Date expiresDate, Date issuedDate, int status, String validationLevel) {
+    private void setupRecord(UUID organizationId, String organizationName, String ca, String commonName, Date expiresDate, Date issuedDate, int status, String validationLevel) {
         this.organizationId = organizationId;
         this.organizationName = organizationName;
+        this.ca = ca;
         this.commonName = commonName;
         this.expiresDate = expiresDate;
         this.issuedDate = issuedDate;

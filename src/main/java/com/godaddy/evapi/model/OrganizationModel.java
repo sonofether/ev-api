@@ -10,6 +10,7 @@ public class OrganizationModel extends BaseModel {
     private String localityName;
     private String stateOrProvinceName;
     private String countryName;
+    private String countryCode;
     private String ca;
     
     public OrganizationModel() {
@@ -88,6 +89,15 @@ public class OrganizationModel extends BaseModel {
 
     public void setCa(String ca) {
         this.ca = ca;
+    }
+    
+    public String getCountryCode() {
+        return countryCode;
+    }
+
+    
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
     }
 
     // PRIVATE calls
