@@ -10,9 +10,8 @@ import com.godaddy.evapi.model.CertificateModel;
 
 public class TestCertificateService implements ICertificateService{
     @Override
-    public CertificateModel save(CertificateModel org) {
-        CertificateModel certificateModel = new CertificateModel();
-        return certificateModel;
+    public boolean save(CertificateModel org) {
+        return true;
     }
 
     @Override

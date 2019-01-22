@@ -15,8 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -54,72 +56,100 @@ public class OrganizationControllerTest {
     
     @Test
     public void organizationControllerGetAllTest() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("1.2.3.4");
+        request.setServerName("www.example.com");
+        request.setRequestURI("/");
+        request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findAll(anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
-        ResponseEntity<OrganizationListModel> response = orgController.GetOrganizationList(optInt, optInt);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationList(request, optInt, optInt);
         assert(response.getStatusCode() == HttpStatus.OK);
-        OrganizationListModel orgList = response.getBody();
+        OrganizationListModel orgList = response.getBody().getContent();
         assertNotNull(orgList);
         assert(orgList.getOrganizations().get(0).getCommonName().equals("example.com"));
     }
     
     @Test
     public void organizationControllerGetBySerialNumberTest() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("1.2.3.4");
+        request.setServerName("www.example.com");
+        request.setRequestURI("/");
+        request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findBySerialNumber(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
-        ResponseEntity<OrganizationListModel> response = orgController.GetOrganizationBySerialNumber("1234", optInt, optInt);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationBySerialNumber(request, "1234", optInt, optInt);
         assert(response.getStatusCode() == HttpStatus.OK);
-        OrganizationListModel orgList = response.getBody();
+        OrganizationListModel orgList = response.getBody().getContent();
         assertNotNull(orgList);
         assert(orgList.getOrganizations().get(0).getCommonName().equals("example.com"));
     }
     
     @Test
     public void organizationControllerGetByCommonNameTest() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setServerName("www.example.com");
+        request.setRequestURI("/");
+        request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
-        ResponseEntity<OrganizationListModel> response = orgController.GetOrganizationByCommonName("example.com", optInt, optInt);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByCommonName(request, "example.com", optInt, optInt);
         assert(response.getStatusCode() == HttpStatus.OK);
-        OrganizationListModel orgList = response.getBody();
+        OrganizationListModel orgList = response.getBody().getContent();
         assertNotNull(orgList);
         assert(orgList.getOrganizations().get(0).getCommonName().equals("example.com"));
     }
     
     @Test
     public void organizationControllerGetByOrganizationNameTest() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setServerName("www.example.com");
+        request.setRequestURI("/");
+        request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
-        ResponseEntity<OrganizationListModel> response = orgController.GetOrganizationByName("Asink, Inc", optInt, optInt);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByName(request, "Asink, Inc", optInt, optInt);
         assert(response.getStatusCode() == HttpStatus.OK);
-        OrganizationListModel orgList = response.getBody();
+        OrganizationListModel orgList = response.getBody().getContent();
         assertNotNull(orgList);
         assert(orgList.getOrganizations().get(0).getCommonName().equals("example.com"));
     }
     
     @Test
     public void organizationControllerGetByNameSerialNumberCountry() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setServerName("www.example.com");
+        request.setRequestURI("/");
+        request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findByNameSerialNumberCountry(anyString(), anyString(), anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
-        ResponseEntity<OrganizationListModel> response = orgController.GetOrganizationByNameSerialNumberCountry("example.com", "1234", "US", optInt, optInt);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByNameSerialNumberCountry(request, "example.com", "1234", "US", optInt, optInt);
         assert(response.getStatusCode() == HttpStatus.OK);
-        OrganizationListModel orgList = response.getBody();
+        OrganizationListModel orgList = response.getBody().getContent();
         assertNotNull(orgList);
         assert(orgList.getOrganizations().get(0).getCommonName().equals("example.com"));
     }
 
     @Test
     public void organizationControllerGetByNameSerialNumberCountryState() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setServerName("www.example.com");
+        request.setRequestURI("/");
+        request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findByNameSerialNumberCountryState(anyString(), anyString(), anyString(), anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
-        ResponseEntity<OrganizationListModel> response = orgController.GetOrganizationByNameSerialNumberCountryState("example.com", "1234", "US", "AZ", optInt, optInt);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByNameSerialNumberCountryState(request, "example.com", "1234", "US", "AZ", optInt, optInt);
         assert(response.getStatusCode() == HttpStatus.OK);
-        OrganizationListModel orgList = response.getBody();
+        OrganizationListModel orgList = response.getBody().getContent();
         assertNotNull(orgList);
         assert(orgList.getOrganizations().get(0).getCommonName().equals("example.com"));
     }
     
+    // TODO Finish unit tests once writes are working
     @Test
     public void organizationControllerSaveTest() {
+        SetupAuthentication();
         /*
         Optional<Integer> optInt = Optional.empty();
         Authentication authMock = Mockito.mock(Authentication.class);
@@ -128,6 +158,8 @@ public class OrganizationControllerTest {
         Claims claims = new Claims();
         when(authMock.getCredentials()).thenReturn();
         //SecurityContextHolder.getContext().getAuthentication().getCredentials();
+        */
+        /*
         when(organizationService.save(any())).thenReturn(true);
         OrganizationInputModel organization = new OrganizationInputModel();
         organization.setCommonName("testcommonname.org");
@@ -158,29 +190,30 @@ public class OrganizationControllerTest {
     @Test
     public void organizationControllerCollisionDetectTest() {
         when(organizationService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
-        CollisionModel result = orgController.CollisionDetectByOrganizationName("Asink");
+        CollisionModel result = orgController.CollisionDetectByOrganizationName("");
         assert(result.isCollision());
     }
     
     @Test
     public void organizationControllerCollisionDetectCommonNameTest() {
         when(organizationService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
-        CollisionModel result = orgController.CollisionDetectByOrganizationName("");
+        CollisionModel result = orgController.CollisionDetectByCommonName("");
         assert(result.isCollision());
     }
 
     @Test
-    public void d() {
-        
-    }
-
-    @Test
-    public void e() {
+    public void dummyTest() {
         
     }
     
-    @Test
-    public void f() {
-        
+    // Private/Helper functions
+    private void SetupAuthentication() {
+        Claims claims = Mockito.mock(Claims.class);
+        when(claims.get(anyString())).thenReturn("My Cool CA");
+        Authentication authentication = Mockito.mock(Authentication.class);
+        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(SecurityContextHolder.getContext().getAuthentication().getCredentials()).thenReturn(claims);
     }
 }

@@ -47,4 +47,28 @@ public class CNameControllerTest {
         assertNotNull(response);
         assert(response.isBlacklisted());
     }
+    
+    @Test
+    public void testDelete() {
+        ResponseEntity<HttpStatus> response = cNameController.delete();
+        assert(response.getStatusCode() == HttpStatus.NOT_IMPLEMENTED);
+    }
+    
+    @Test
+    public void testPut() {
+        ResponseEntity<HttpStatus> response = cNameController.update();
+        assert(response.getStatusCode() == HttpStatus.NOT_IMPLEMENTED);
+    }
+    
+    @Test
+    public void testPost() {
+        ResponseEntity<HttpStatus> response = cNameController.createEntry();
+        assert(response.getStatusCode() == HttpStatus.NOT_IMPLEMENTED);
+    }
+    
+    @Test
+    public void testGetAll() {
+        ResponseEntity<HttpStatus> response = cNameController.getAll();
+        assert(response.getStatusCode() == HttpStatus.NOT_IMPLEMENTED);
+    }
 }

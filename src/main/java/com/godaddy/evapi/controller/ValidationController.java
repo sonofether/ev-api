@@ -180,7 +180,6 @@ public class ValidationController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     } // UpdateRecord
     
-    // We do not support deletes
     @DeleteMapping("/{id}")
     public ResponseEntity<String> RemoveRecord(@PathVariable(value="id") String id) {
         ValidationItemModel vi = validationService.findById(id);

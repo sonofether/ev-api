@@ -2,10 +2,15 @@ package com.godaddy.evapi.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import org.elasticsearch.action.DocWriteResponse;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.transport.TransportClient;
@@ -27,6 +32,34 @@ public class BlacklistService implements IBlacklistService {
     static final String TYPE = "record";
     
     ObjectMapper objectMapper = new ObjectMapper();    
+
+    // Create/Post
+    // Write a new record to the index
+    @Override
+    public boolean save(BlacklistModel blModel) {
+        boolean result = false;
+        // We need to take out id, since ES stores it as _id. Would duplicate the data.
+        Map data = objectMapper.convertValue(blModel, Map.class);
+        data.remove("id");
+        IndexRequest request = new IndexRequest(INDEX, TYPE, blModel.getId().toString()).source(data);
+        IndexResponse response = transportClient.index(request).actionGet();
+        if(response.getResult() == DocWriteResponse.Result.CREATED || 
+           response.getResult() == DocWriteResponse.Result.UPDATED) {
+            result = true;
+        }
+        return result;
+    }
+    
+    // Delete
+    @Override
+    public boolean delete(String id) {
+        DeleteResponse response = transportClient.prepareDelete(INDEX, TYPE, id).get();
+        if(response != null && response.getResult() == DocWriteResponse.Result.DELETED) {
+            // Hey, it worked!
+            return true;
+        }
+        return false;
+    }
     
     // Read/Get
     @Override
@@ -62,6 +95,17 @@ public class BlacklistService implements IBlacklistService {
                     .setTypes(TYPE)
                     .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
                     .setQuery(QueryBuilders.matchQuery("commonName", commonName))
+                    .setFrom(offset).setSize(limit).setExplain(true)
+                    .get();
+        return findRecords(response, offset, limit);
+    }
+    
+    @Override
+    public BlacklistListModel findByCA(String ca, int offset, int limit) {
+        SearchResponse response = transportClient.prepareSearch(INDEX)
+                    .setTypes(TYPE)
+                    .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                    .setQuery(QueryBuilders.matchQuery("insertedBy", ca))
                     .setFrom(offset).setSize(limit).setExplain(true)
                     .get();
         return findRecords(response, offset, limit);

@@ -13,20 +13,17 @@ public class TestBlacklistService implements IBlacklistService {
 
     @Override
     public BlacklistModel findById(String id) {
-        // TODO Auto-generated method stub
-        return null;
+        return generateBlacklist();
     }
 
     @Override
     public BlacklistListModel findAll(int offset, int limit) {
-        // TODO Auto-generated method stub
-        return null;
+        return generateBlacklistList();
     }
 
     @Override
     public BlacklistListModel findByCommonName(String commonName, int offset, int limit) {
-        // TODO Auto-generated method stub
-        return null;
+        return generateBlacklistList();
     }
     
     public static BlacklistListModel generateBlacklistList() {
@@ -49,5 +46,23 @@ public class TestBlacklistService implements IBlacklistService {
         blModel.setSerialNumber("123456");
         
         return blModel;
+    }
+
+    // TODO Add these function tests
+    @Override
+    public boolean save(BlacklistModel blModel) {
+        // TODO Auto-generated method stub
+        return true;
+    }
+
+    @Override
+    public boolean delete(String id) {
+        // TODO Auto-generated method stub
+        return true;
+    }
+
+    @Override
+    public BlacklistListModel findByCA(String ca, int offset, int limit) {
+        return generateBlacklistList();
     }
 }
