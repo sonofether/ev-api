@@ -49,7 +49,7 @@ public class AuthenticationFilter extends GenericFilterBean {
 
         try {
             if (postToLogin(httpRequest, resourcePath)) {
-                logger.debug("Trying to authenticate user {} by X-Auth-Username method", basicAuth);
+                logger.debug("Trying to authenticate user {} by Basic Authentication method", basicAuth);
                 // Do basic auth and issue a jwt
                 validateBasicAuth(httpResponse, basicAuth);
                 return;

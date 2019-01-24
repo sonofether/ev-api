@@ -48,6 +48,7 @@ public class BasicAuthenticationProviderTest {
         ReflectionTestUtils.setField(baProvider, "fileName", "/Users/authfile");
         ReflectionTestUtils.setField(baProvider, "privateKeyFile", "/Users/private_key.der");
         ReflectionTestUtils.setField(baProvider, "timeout", 5);
+        ReflectionTestUtils.setField(baProvider, "defaultSalt", "GettingSaltyUpInHere");
     }
     
     @Test
@@ -74,7 +75,7 @@ public class BasicAuthenticationProviderTest {
     /*
     @Test
     public void buildAuthFile() {
-        String user = OneWayEncryption.HashValue("asink", OneWayEncryption.DEFAULT_SALT.getBytes());
+        String user = OneWayEncryption.HashValue("asink", defaultSaltq.getBytes());
         byte[] salt = OneWayEncryption.getSalt();
         String password = OneWayEncryption.HashValue("password", salt); 
         

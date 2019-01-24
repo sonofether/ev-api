@@ -33,7 +33,9 @@ public class AWSFileServiceTest {
         String filePath = "/Users/asink/Downloads/doc_upload.jpg";
         UUID uuid = UUID.randomUUID();
         String fileName = uuid.toString();
+        /*
         List<String> fileNames = fileService.listFiles();
+        
         assert(fileNames.size() > 0);
         for (String temp : fileNames) {
             System.out.println(temp);
@@ -47,5 +49,7 @@ public class AWSFileServiceTest {
         //assert(result);
         //result = fileService.renameFile(fileName, UUID.randomUUID().toString());
         //assert(result);
+         /* 
+         */
     }
 }

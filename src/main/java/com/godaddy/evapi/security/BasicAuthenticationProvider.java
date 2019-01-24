@@ -37,6 +37,9 @@ public class BasicAuthenticationProvider implements AuthenticationProvider {
     @Value("${auth.file.name}")
     private String fileName;
     
+    @Value( "${encryption.salt.default}" )
+    private String defaultSalt;
+    
     private String user = "";
     private String pass = "";
     private String ca = "";
@@ -94,7 +97,7 @@ public class BasicAuthenticationProvider implements AuthenticationProvider {
         try {
             BufferedReader buffer = new BufferedReader(new FileReader(fileName));
             String line = null;
-            String hashedUser = OneWayEncryption.HashValue(user, OneWayEncryption.DEFAULT_SALT.getBytes());
+            String hashedUser = OneWayEncryption.HashValue(user, defaultSalt.getBytes());
             do {
                 line = buffer.readLine();
                 if(line != null) {
