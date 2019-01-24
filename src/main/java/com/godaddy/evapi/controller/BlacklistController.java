@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,18 +33,15 @@ import io.jsonwebtoken.Claims;
 @RestController
 @RequestMapping(value = "/blacklist")
 public class BlacklistController extends BaseController {
-    private int offset;
-    private int limit;
-    
     @Autowired
     IBlacklistService blacklistService;
     
     // Get all records, paginated
     @GetMapping("")
     public ResponseEntity<Resource<BlacklistListModel>> getAll(HttpServletRequest request,
-                @RequestParam( value="offset") Optional<Integer> offset,
-                @RequestParam( value="limit") Optional<Integer> limit) {
-        setOffsetLimit(offset,limit);
+                @RequestParam( value="offset") Optional<Integer> offsetValue,
+                @RequestParam( value="limit") Optional<Integer> limitValue) {
+        setOffsetLimit(offsetValue,limitValue);
         BlacklistListModel entries = blacklistService.findAll(this.offset, this.limit);
         
         // Return found entries
@@ -62,7 +60,8 @@ public class BlacklistController extends BaseController {
         if(id != null && id.trim().length() > 0) {
             BlacklistModel entry = blacklistService.findById(id);
             // If any entries, see if we can delete them
-            if(entry != null) {
+            // Validate the deleting ca is the same as the inserting one
+            if(entry != null && entry.getInsertedBy().equals(ca)) {
                 success = blacklistService.delete(id);
             }
         }
@@ -80,7 +79,7 @@ public class BlacklistController extends BaseController {
     }
         
     @PostMapping("")
-    public ResponseEntity<IdModel> createBlacklistEntry(BlacklistInputModel blEntry) {
+    public ResponseEntity<IdModel> createBlacklistEntry(@RequestBody BlacklistInputModel blEntry) {
         String ca = getCAName();
         // Create our new id
         UUID id = UUID.randomUUID();
@@ -89,7 +88,7 @@ public class BlacklistController extends BaseController {
         if(validateNewRecord(blEntry)) {
             // Serial number is blank. Not sure we even need it.
             BlacklistModel blModel = new BlacklistModel(id, blEntry.getOrganizationName(), blEntry.getCommonName(), 
-                        "", blEntry.getReason(), ca);
+                        blEntry.getSerialNumber(), blEntry.getReason(), ca);
             if(blacklistService.save(blModel)) {
                 // Return created record id
                 return new ResponseEntity<IdModel>(new IdModel(id.toString()), HttpStatus.OK);
@@ -110,10 +109,10 @@ public class BlacklistController extends BaseController {
        
     @GetMapping("/commonName/{cname}")
     public ResponseEntity<Resource<BlacklistListModel>> getBlacklistByCName(HttpServletRequest request,
-                @RequestParam( value="offset") Optional<Integer> offset,
-                @RequestParam( value="limit") Optional<Integer> limit,
+                @RequestParam( value="offset") Optional<Integer> offsetValue,
+                @RequestParam( value="limit") Optional<Integer> limitValue,
                 @PathVariable(value="cname") String cName) {
-        setOffsetLimit(offset,limit);
+        setOffsetLimit(offsetValue,limitValue);
         if(cName != null && cName.length() > 2) {
             BlacklistListModel entries = blacklistService.findByCommonName(cName, this.offset, this.limit);
             if(entries != null && entries.getCount() > 0) {
@@ -126,10 +125,10 @@ public class BlacklistController extends BaseController {
     
     @GetMapping("/ca/{ca}")
     public ResponseEntity<Resource<BlacklistListModel>> getBlacklistByCA(HttpServletRequest request,
-                @RequestParam( value="offset") Optional<Integer> offset,
-                @RequestParam( value="limit") Optional<Integer> limit,
+                @RequestParam( value="offset") Optional<Integer> offsetValue,
+                @RequestParam( value="limit") Optional<Integer> limitValue,
                 @PathVariable(value="ca") String ca) {
-        setOffsetLimit(offset,limit);
+        setOffsetLimit(offsetValue,limitValue);
         if(ca != null && ca.length() > 1) {
             BlacklistListModel entries = blacklistService.findByCA(ca, this.offset, this.limit);
             if(entries != null && entries.getCount() > 0) {

@@ -54,9 +54,9 @@ public class OrganizationController extends BaseController {
     
     @GetMapping(value="")
     public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationList(HttpServletRequest request,
-                @RequestParam( value="offset") Optional<Integer> offset,
-                @RequestParam( value="limit") Optional<Integer> limit) {
-        setOffsetLimit(offset,limit);
+                @RequestParam( value="offset") Optional<Integer> offsetValue,
+                @RequestParam( value="limit") Optional<Integer> limitValue) {
+        setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findAll(this.offset, this.limit);
         if(orgList.getCount() < 1) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -120,8 +120,8 @@ public class OrganizationController extends BaseController {
     @GetMapping(value="/name/{name}")
     public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByName(HttpServletRequest request, 
                 @PathVariable(value="name") String name, 
-                @RequestParam( value="offset") Optional<Integer> offset, @RequestParam( value="limit") Optional<Integer> limit) {
-        setOffsetLimit(offset,limit);
+                @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
+        setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByOrganizationName(name, this.offset, this.limit);
         if(orgList.getCount() < 1) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -134,8 +134,8 @@ public class OrganizationController extends BaseController {
     @GetMapping(value="/commonname/{name}")
     public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByCommonName(HttpServletRequest request, 
                 @PathVariable(value="name") String name, 
-                @RequestParam( value="offset") Optional<Integer> offset, @RequestParam( value="limit") Optional<Integer> limit) {
-        setOffsetLimit(offset,limit);
+                @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
+        setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByCommonName(name, this.offset, this.limit);
         if(orgList.getCount() < 1) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -148,8 +148,8 @@ public class OrganizationController extends BaseController {
     @GetMapping(value="/serial/{serialNumber}")
     public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationBySerialNumber(HttpServletRequest request, 
                 @PathVariable(value="serialNumber") String serialNumber, 
-                @RequestParam( value="offset") Optional<Integer> offset, @RequestParam( value="limit") Optional<Integer> limit) {
-        setOffsetLimit(offset,limit);
+                @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
+        setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findBySerialNumber(serialNumber, this.offset, this.limit);
         if(orgList.getCount() < 1) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -163,8 +163,8 @@ public class OrganizationController extends BaseController {
     public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByNameSerialNumberCountry(HttpServletRequest request, 
                 @PathVariable(value="name") String name, 
                 @PathVariable(value="serialNumber") String serialNumber, @PathVariable(value="country") String country, 
-                @RequestParam( value="offset") Optional<Integer> offset, @RequestParam( value="limit") Optional<Integer> limit) {
-        setOffsetLimit(offset,limit);
+                @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
+        setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByNameSerialNumberCountry(name, serialNumber, country,this.offset, this.limit);
         if(orgList.getCount() < 1) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -179,8 +179,8 @@ public class OrganizationController extends BaseController {
                 @PathVariable(value="name") String name, 
                 @PathVariable(value="serialNumber") String serialNumber, @PathVariable(value="country") String country,
                 @PathVariable(value="state") String state, 
-                @RequestParam( value="offset") Optional<Integer> offset, @RequestParam( value="limit") Optional<Integer> limit) {
-        setOffsetLimit(offset,limit);
+                @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
+        setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByNameSerialNumberCountryState(name, serialNumber, country, state, this.offset, this.limit);
         if(orgList.getCount() < 1) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

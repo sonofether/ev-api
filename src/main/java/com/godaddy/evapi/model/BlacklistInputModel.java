@@ -4,6 +4,7 @@ package com.godaddy.evapi.model;
 public class BlacklistInputModel extends BaseModel {
     private String      organizationName;
     private String      commonName;
+    private String      serialNumber;
     private String      reason;
     
     public String getOrganizationName() {
@@ -22,6 +23,14 @@ public class BlacklistInputModel extends BaseModel {
         this.commonName = commonName;
     }
     
+    public String getSerialNumber() {
+        return serialNumber;
+    }
+    
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber;
+    }
+
     public String getReason() {
         return reason;
     }
@@ -29,6 +38,5 @@ public class BlacklistInputModel extends BaseModel {
     public void setReason(String reason) {
         this.reason = reason;
     }
-    
     
 }
