@@ -15,10 +15,10 @@ phases:
     commands:
       - echo EV API pre-build started on `date`
       - mkdir /Users
-      - echo "$EVAPI_AUTHFILE" > /Users/authfile
-      - echo $EVAPI_PRIVATE_KEY > private_key.pem
-      - openssl pkcs8 -topk8 -inform PEM -outform DER -in private_key.pem -out /Users/private_key.der -nocrypt
-      - openssl rsa -in private_key.pem -pubout -outform DER -out /Users/public_key.der
+      - echo $EVAPI_AUTHFILE > /Users/authfile
+      - echo $EVAPI_PRIVATE_KEY > /Users/private_key.pem
+      - openssl pkcs8 -topk8 -inform PEM -outform DER -in /Users/private_key.pem -out /Users/private_key.der -nocrypt
+      - openssl rsa -in /Users/private_key.pem -pubout -outform DER -out /Users/public_key.der
   build:
     commands:
       - echo EV API build started on `date`
