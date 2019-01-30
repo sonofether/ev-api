@@ -14,6 +14,8 @@ import java.util.Date;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.time.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -28,6 +30,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 public class BasicAuthenticationProvider implements AuthenticationProvider {
+    private final static Logger logger = LoggerFactory.getLogger(AuthenticationFilter.class);
+    
     @Value( "${jwt.private.key.file}" )
     private String privateKeyFile;
     
@@ -54,11 +58,13 @@ public class BasicAuthenticationProvider implements AuthenticationProvider {
         String basicAuth = authHeader.get();
         // Get creds from basic auth
         if(!AuthenticateUser(basicAuth)) {
+            logger.debug("Failed to authenticate user");
             return null;
         }
                 
         String token = this.GenerateToken();
         if(token == null || token.length() < 1) {
+            logger.debug("Failed to generate token");
             return null;
         }
         
@@ -89,6 +95,7 @@ public class BasicAuthenticationProvider implements AuthenticationProvider {
             user = tokenizer.nextToken().trim();
             pass = tokenizer.nextToken().trim();
         } catch (Exception ex) {
+            logger.debug("Failed to get basic auth header: " + ex.getMessage());
             ex.printStackTrace();
             return isValid;
         }
@@ -112,6 +119,7 @@ public class BasicAuthenticationProvider implements AuthenticationProvider {
             } while (line != null);
             buffer.close();
         } catch (Exception ex) {
+            logger.debug("Failed to compare against authfile: " + ex.getMessage());
             ex.printStackTrace();
         }
         

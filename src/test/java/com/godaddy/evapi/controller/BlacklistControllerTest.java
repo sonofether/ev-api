@@ -152,7 +152,7 @@ public class BlacklistControllerTest {
     @Test
     public void blacklistControllerDelete() {
         SetupAuthentication();
-        BlacklistModel value = new BlacklistModel(UUID.randomUUID(), "OrgName", "commonName", "serialNumber", "reason", "insertedBy");
+        BlacklistModel value = new BlacklistModel(UUID.randomUUID(), "OrgName", "commonName", "serialNumber", "reason", "My Cool CA");
         when(blacklistService.findById(anyString())).thenReturn(value);
         when(blacklistService.delete(anyString())).thenReturn(true);
         ResponseEntity<HttpStatus> response = blController.deleteBlacklist("SomeIdString");
