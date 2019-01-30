@@ -1,9 +1,27 @@
 version: 0.1
 
+env:
+  variables:
+    MyVar: "SomeValue"
+  parameter-store:
+    EVAPI_PRIVATE_KEY: "EVAPI_PRIVATE_KEY"
+    EVAPI_AUTHFILE: "EVAPI_AUTHFILE"
+
 phases:
+  install:
+    commands:
+      - echo EV API install started on `date`
+  pre_build:
+    commands:
+      - echo EV API pre-build started on `date`
   build:
     commands:
+      - mkdir /Users
+      - echo "$EVAPI_AUTHFILE" > /Users/authfile
+      - echo $EVAPI_PRIVATE_KEY > private_key.pem
       - echo EV API build started on `date`
+      - openssl pkcs8 -topk8 -inform PEM -outform DER -in private_key.pem -out /Users/private_key.der -nocrypt
+      - openssl rsa -in private_key.pem -pubout -outform DER -out /Users/public_key.der
       - mvn test
   post_build:
     commands:
