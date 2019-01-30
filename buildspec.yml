@@ -32,3 +32,4 @@ phases:
 artifacts:
   files:
     - target/ev-api-1.0-SNAPSHOT.jar
+
