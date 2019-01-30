@@ -2,7 +2,7 @@ version: 0.1
 
 env:
   variables:
-    MyVar: "SomeValue"
+    VarName: "Value"
   parameter-store:
     EVAPI_PRIVATE_KEY: "EVAPI_PRIVATE_KEY"
     EVAPI_AUTHFILE: "EVAPI_AUTHFILE"
