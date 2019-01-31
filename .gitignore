@@ -13,3 +13,8 @@ src/main/resources/application.properties
 ./src/main/resources/application.properties
 src/test/resources/
 ./src/test/resources/
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
