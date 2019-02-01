@@ -26,14 +26,14 @@ phases:
       - echo $EVAPI_PRIVATE_KEY > /Users/private_key.pem
       - openssl pkcs8 -topk8 -inform PEM -outform DER -in /Users/private_key.pem -out /Users/private_key.der -nocrypt
       - openssl rsa -in /Users/private_key.pem -pubout -outform DER -out /Users/public_key.der
-      - sed -i -e 's/BUCKETNAME/$EVAPI_BUCKET/g' src/main/resources/application.properties
-      - sed -i -e 's/ACCESSID/$EVAPI_ACCESSID/g' src/main/resources/application.properties
-      - sed -i -e 's/SECRETID/$EVAPI_SECRETID/g' src/main/resources/application.properties
-      - sed -i -e 's/DEFAULTSALT/$EVAPI_DEFAULT_SALT/g' src/main/resources/application.properties
-      - sed -i -e 's/TIMEOUT/$EVAPI_TIMEOUT/g' src/main/resources/application.properties
-      - sed -i -e 's/ESNAME/$EVAPI_ESNAME/g' src/main/resources/application.properties
-      - sed -i -e 's/ESHOST/$EVAPI_ESHOST/g' src/main/resources/application.properties
-      - sed -i -e 's/ESPORT/$EVAPI_ESPORT/g' src/main/resources/application.properties
+      - sed -i -e 's/BUCKETNAME/'$EVAPI_BUCKET'/g' src/main/resources/application.properties
+      - sed -i -e 's/ACCESSID/'$EVAPI_ACCESSID'/g' src/main/resources/application.properties
+      - sed -i -e 's/SECRETID/'$EVAPI_SECRETID'/g' src/main/resources/application.properties
+      - sed -i -e 's/DEFAULTSALT/'$EVAPI_DEFAULT_SALT'/g' src/main/resources/application.properties
+      - sed -i -e 's/TIMEOUT/'$EVAPI_TIMEOUT'/g' src/main/resources/application.properties
+      - sed -i -e 's/ESNAME/'$EVAPI_ESNAME'/g' src/main/resources/application.properties
+      - sed -i -e 's/ESHOST/'$EVAPI_ESHOST'/g' src/main/resources/application.properties
+      - sed -i -e 's/ESPORT/'$EVAPI_ESPORT'/g' src/main/resources/application.properties
   build:
     commands:
       - echo EV API build started on `date`
