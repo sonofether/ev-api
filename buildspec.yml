@@ -6,7 +6,14 @@ env:
   parameter-store:
     EVAPI_PRIVATE_KEY: "EVAPI_PRIVATE_KEY"
     EVAPI_AUTHFILE: "EVAPI_AUTHFILE"
-
+    EVAPI_BUCKET: "EVAPI_S3_BUCKET_NAME"
+    EVAPI_ACCESSID: "EVAPI_S3_BUCKET_ACCESS_ID"
+    EVAPI_SECRETID: "EVAPI_S3_BUCKET_SECRET"
+    EVAPI_ESPORT: "EVAPI_ELASTIC_PORT"
+    EVAPI_ESHOST: "EVAPI_ELASTIC_HOST"
+    EVAPI_ESNAME: "EVAPI_ELASTIC_NAME"
+    EVAPI_TIMEOUT: "EVAPI_TIMEOUT"
+    EVAPI_DEFAULT_SALT: "EVAPI_DEFAULT_SALT"
 phases:
   install:
     commands:
@@ -15,12 +22,18 @@ phases:
     commands:
       - echo EV API pre-build started on `date`
       - mkdir /Users
-      - echo $EVAPI_AUTHFILE 
-      - echo $EVAPI_PRIVATE_KEY
       - echo $EVAPI_AUTHFILE > /Users/authfile
       - echo $EVAPI_PRIVATE_KEY > /Users/private_key.pem
       - openssl pkcs8 -topk8 -inform PEM -outform DER -in /Users/private_key.pem -out /Users/private_key.der -nocrypt
       - openssl rsa -in /Users/private_key.pem -pubout -outform DER -out /Users/public_key.der
+      - sed -i -e 's/BUCKETNAME/$EVAPI_BUCKET/g' src/main/resources/application.properties
+      - sed -i -e 's/ACCESSID/$EVAPI_ACCESSID/g' src/main/resources/application.properties
+      - sed -i -e 's/SECRETID/$EVAPI_SECRETID/g' src/main/resources/application.properties
+      - sed -i -e 's/DEFAULTSALT/$EVAPI_DEFAULT_SALT/g' src/main/resources/application.properties
+      - sed -i -e 's/TIMEOUT/$EVAPI_TIMEOUT/g' src/main/resources/application.properties
+      - sed -i -e 's/ESNAME/$EVAPI_ESNAME/g' src/main/resources/application.properties
+      - sed -i -e 's/ESHOST/$EVAPI_ESHOST/g' src/main/resources/application.properties
+      - sed -i -e 's/ESPORT/$EVAPI_ESPORT/g' src/main/resources/application.properties
   build:
     commands:
       - echo EV API build started on `date`
@@ -32,3 +45,11 @@ phases:
 artifacts:
   files:
     - target/ev-api-0.0.1-SNAPSHOT.jar
+  secondary-artifacts:
+    files:
+      - /Users/authfile
+      - /Users/private_key.der
+      - /Users/public_key.der
+    base-directory:
+      - /Users
+
