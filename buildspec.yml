@@ -14,6 +14,9 @@ env:
     EVAPI_ESNAME: "EVAPI_ELASTIC_NAME"
     EVAPI_TIMEOUT: "EVAPI_TIMEOUT"
     EVAPI_DEFAULT_SALT: "EVAPI_DEFAULT_SALT"
+    EVAPI_AUTH_FILE: "EVAPI_AUTHFILE_LOCATION"
+    EVAPI_PUBLIC_KEY_FILE: "EVAPI_PUBLIC_KEY_LOCATION"
+    EVAPI_PRIVATE_KEY_FILE: "EVAPI_PRIVATE_KEY_LOCATION"
 phases:
   install:
     commands:
@@ -34,6 +37,9 @@ phases:
       - sed -i -e 's/ESNAME/'$EVAPI_ESNAME'/g' src/main/resources/application.properties
       - sed -i -e 's/ESHOST/'$EVAPI_ESHOST'/g' src/main/resources/application.properties
       - sed -i -e 's/ESPORT/'$EVAPI_ESPORT'/g' src/main/resources/application.properties
+      - sed -i -e 's/AUTH_FILE/'$EVAPI_AUTH_FILE'/g' src/main/resources/application.properties
+      - sed -i -e 's/PUBLIC_KEY/'$EVAPI_PUBLIC_KEY_FILE'/g' src/main/resources/application.properties
+      - sed -i -e 's/PRIVATE_KEY/'$EVAPI_PRIVATE_KEY_FILE'/g' src/main/resources/application.properties
   build:
     commands:
       - echo EV API build started on `date`
