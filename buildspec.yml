@@ -24,11 +24,11 @@ phases:
   pre_build:
     commands:
       - echo EV API pre-build started on `date`
-      - mkdir -p /home/webapp/config
-      - echo $EVAPI_AUTHFILE > /home/webapp/config/authfile
-      - echo $EVAPI_PRIVATE_KEY > /home/webapp/config/private_key.pem
-      - openssl pkcs8 -topk8 -inform PEM -outform DER -in /home/webapp/config/private_key.pem -out /home/webapp/config/private_key.der -nocrypt
-      - openssl rsa -in /home/webapp/config/private_key.pem -pubout -outform DER -out /home/webapp/config/public_key.der
+      - mkdir /Users/
+      - echo $EVAPI_AUTHFILE > /Users/authfile
+      - echo $EVAPI_PRIVATE_KEY > /Users/private_key.pem
+      - openssl pkcs8 -topk8 -inform PEM -outform DER -in /Users/private_key.pem -out /Users/private_key.der -nocrypt
+      - openssl rsa -in /Users/private_key.pem -pubout -outform DER -out /Users/public_key.der
       - sed -i -e 's/BUCKETNAME/'$EVAPI_BUCKET'/g' src/main/resources/application.properties
       - sed -i -e 's/ACCESSID/'$EVAPI_ACCESSID'/g' src/main/resources/application.properties
       - sed -i -e 's/SECRETID/'$EVAPI_SECRETID'/g' src/main/resources/application.properties
