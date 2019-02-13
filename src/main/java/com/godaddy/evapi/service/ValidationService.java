@@ -5,20 +5,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequestInterceptor;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.amazonaws.http.AWSRequestSigningApacheInterceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godaddy.evapi.model.OrganizationListModel;
 import com.godaddy.evapi.model.OrganizationModel;
@@ -27,16 +33,19 @@ import com.godaddy.evapi.model.ValidationItemModel;
 import com.godaddy.evapi.model.ValidationListModel;
 
 @Service
-public class ValidationService implements IValidationService {
+public class ValidationService extends BaseAWSService implements IValidationService {
     
     @Autowired
     TransportClient transportClient;
     
+    @Autowired
+    RestHighLevelClient restClient;
+    
     static final String INDEX = "validation";
     static final String TYPE = "record";
     
-    ObjectMapper objectMapper = new ObjectMapper();    
-
+    private ObjectMapper objectMapper = new ObjectMapper();    
+    
     @Override
     public boolean save(ValidationItemModel vi) {
         boolean result = false;
@@ -85,20 +94,39 @@ public class ValidationService implements IValidationService {
 
     @Override
     public ValidationListModel findAll(int offset, int limit) {
-        SearchResponse response = transportClient.prepareSearch(INDEX).setTypes(TYPE).setFrom(offset).setSize(limit).get();
-        return findRecords(response, offset, limit);
+        try {
+            SearchRequest request = generateSearchRequest(QueryBuilders.matchAllQuery(), offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+/*
+            SearchResponse response = transportClient.prepareSearch(INDEX).setTypes(TYPE).setFrom(offset).setSize(limit).get();
+*/
+            return findRecords(response, offset, limit);
+        } catch(Exception ex) {
+            
+        }
+        
+        return null;
     }
     
     @Override
     public ValidationListModel findByCertificateId(String certificateId, int offset, int limit) {
+        try {
+            SearchRequest request = generateSearchRequest(QueryBuilders.matchQuery("certificateId", certificateId), offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+/*
         SearchResponse response = transportClient.prepareSearch(INDEX)
                     .setTypes(TYPE)
                     .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
                     .setQuery(QueryBuilders.matchQuery("certificateId", certificateId))
                     .setFrom(offset).setSize(limit).setExplain(true)
                     .get();
-        return findRecords(response, offset, limit);
-
+*/
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            
+        }
+        
+        return null;
     }
 
     // PRIVATE FUNCTION CALLS / HELPERS

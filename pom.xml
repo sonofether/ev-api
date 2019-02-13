@@ -79,6 +79,12 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 		</dependency>
 		
 		<dependency>
+		    <groupId>org.elasticsearch.client</groupId>
+		    <artifactId>elasticsearch-rest-high-level-client</artifactId>
+		    <version>6.2.4</version>
+		</dependency>
+		
+		<dependency>
 			<groupId>org.elasticsearch</groupId> 
 			<artifactId>elasticsearch</artifactId>
 			<version>6.2.4</version>
@@ -119,7 +125,6 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 			<version>1.11.423</version>
 			<type>pom</type>
 		</dependency>
-		
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
@@ -129,6 +134,17 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-dynamodb</artifactId>
 			<version>1.11.423</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.amazonaws</groupId>
+		    <artifactId>aws-java-sdk-elasticsearch</artifactId>
+		    <version>1.11.495</version>
+		</dependency>
+		
+		<dependency>
+	    	<groupId>com.github.awslabs</groupId>
+	    	<artifactId>aws-request-signing-apache-interceptor</artifactId>
+	    	<version>b377278</version>
 		</dependency>
 
 	</dependencies>
@@ -155,6 +171,10 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
             <id>spring-releases</id>
             <url>https://repo.spring.io/libs-release</url>
         </repository>
+        <repository>
+		    <id>jitpack.io</id>
+		    <url>https://jitpack.io</url>
+		</repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>

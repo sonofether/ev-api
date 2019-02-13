@@ -5,35 +5,44 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequestInterceptor;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.amazonaws.http.AWSRequestSigningApacheInterceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godaddy.evapi.model.OrganizationListModel;
 import com.godaddy.evapi.model.OrganizationModel;
 import com.godaddy.evapi.repository.OrganizationRepository;
 
 @Service
-public class OrganizationService implements IOrganizationService {
+public class OrganizationService extends BaseAWSService implements IOrganizationService {
 
     @Autowired
     TransportClient transportClient;
     
+    @Autowired
+    RestHighLevelClient restClient;
+        
     static final String INDEX = "organization";
     static final String TYPE = "record";
     
-    ObjectMapper objectMapper = new ObjectMapper();    
+    private ObjectMapper objectMapper = new ObjectMapper();
     
     // Write a new record to the index
     @Override
@@ -85,46 +94,91 @@ public class OrganizationService implements IOrganizationService {
     
     @Override
     public OrganizationListModel findAll(int offset, int limit) {
-        SearchResponse response = transportClient.prepareSearch(INDEX).setTypes(TYPE).setFrom(offset).setSize(limit).get();
-        return findRecords(response, offset, limit);
+        try {
+            SearchRequest request = generateSearchRequest(QueryBuilders.matchAllQuery(), offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+//            SearchResponse response = transportClient.prepareSearch(INDEX).setTypes(TYPE).setFrom(offset).setSize(limit).get();
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            
+        }
+        
+        return null;
     }
     
     @Override
     public OrganizationListModel findByCommonName(String commonName, int offset, int limit) {
-        SearchResponse response = transportClient.prepareSearch(INDEX)
-                    .setTypes(TYPE)
-                    .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                    .setQuery(QueryBuilders.matchQuery("commonName", commonName))
-                    .setFrom(offset).setSize(limit).setExplain(true)
-                    .get();
-        return findRecords(response, offset, limit);
+        try {
+            SearchRequest request = generateSearchRequest(QueryBuilders.matchQuery("commonName", commonName), offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+/*
+            SearchResponse response = transportClient.prepareSearch(INDEX)
+                        .setTypes(TYPE)
+                        .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                        .setQuery(QueryBuilders.matchQuery("commonName", commonName))
+                        .setFrom(offset).setSize(limit).setExplain(true)
+                        .get();
+*/
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            
+        }
+        
+        return null;
     }
     
     @Override
     public OrganizationListModel findByOrganizationName(String orgName, int offset, int limit) {
-        SearchResponse response = transportClient.prepareSearch(INDEX)
-                    .setTypes(TYPE)
-                    .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                    .setQuery(QueryBuilders.matchQuery("organizationName", orgName))
-                    .setFrom(offset).setSize(limit).setExplain(true)
-                    .get();
-        return findRecords(response, offset, limit);
+        try {
+            SearchRequest request = generateSearchRequest(QueryBuilders.matchQuery("organizationName", orgName), offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+/*    
+            SearchResponse response = transportClient.prepareSearch(INDEX)
+                        .setTypes(TYPE)
+                        .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                        .setQuery(QueryBuilders.matchQuery("organizationName", orgName))
+                        .setFrom(offset).setSize(limit).setExplain(true)
+                        .get();
+*/
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            
+        }
+        
+        return null;
     }
     
     @Override
     public OrganizationListModel findBySerialNumber(String serialNumber, int offset, int limit) {
-        SearchResponse response = transportClient.prepareSearch(INDEX)
+        try {
+            SearchRequest request = generateSearchRequest(QueryBuilders.matchQuery("serialNumber", serialNumber), offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+/*
+            SearchResponse response = transportClient.prepareSearch(INDEX)
                     .setTypes(TYPE)
                     .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
                     .setQuery(QueryBuilders.matchQuery("serialNumber", serialNumber))
                     .setFrom(offset).setSize(limit).setExplain(true)
                     .get();
-        return findRecords(response, offset, limit);        
+*/
+            return findRecords(response, offset, limit);        
+        } catch (Exception ex) {
+            
+        }
+        
+        return null;
     }
     
     @Override
     public OrganizationListModel findByNameSerialNumberCountry(String name, String serialNumber, String country, int offset, int limit) {
-        SearchResponse response = transportClient.prepareSearch(INDEX)
+        try {
+            SearchRequest request = generateSearchRequest(QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("commonName", name))
+                        .must(QueryBuilders.matchQuery("serialNumber", serialNumber))
+                        .must(QueryBuilders.matchQuery("countryName", country)),
+                        offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+/*
+            SearchResponse response = transportClient.prepareSearch(INDEX)
                     .setTypes(TYPE)
                     .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
                     .setQuery(QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("commonName", name))
@@ -132,21 +186,41 @@ public class OrganizationService implements IOrganizationService {
                                 .must(QueryBuilders.matchQuery("countryName", country)))
                     .setFrom(offset).setSize(limit).setExplain(true)
                     .get();
-        return findRecords(response, offset, limit);
+*/
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            
+        }
+        
+        return null;
     }
         
     @Override
     public OrganizationListModel findByNameSerialNumberCountryState(String name, String serialNumber, String country, String state, int offset, int limit) {
-        SearchResponse response = transportClient.prepareSearch(INDEX)
-                    .setTypes(TYPE)
-                    .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                    .setQuery(QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("commonName", name))
-                                .must(QueryBuilders.matchQuery("serialNumber", serialNumber))
-                                .must(QueryBuilders.matchQuery("countryName", country))
-                                .must(QueryBuilders.matchQuery("stateOrProvinceName", state)))
-                    .setFrom(offset).setSize(limit).setExplain(true)
-                    .get();
-        return findRecords(response, offset, limit);
+        try {
+            SearchRequest request = generateSearchRequest(QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("commonName", name))
+                        .must(QueryBuilders.matchQuery("serialNumber", serialNumber))
+                        .must(QueryBuilders.matchQuery("countryName", country))
+                        .must(QueryBuilders.matchQuery("stateOrProvinceName", state)),
+                        offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+/*
+            SearchResponse response = transportClient.prepareSearch(INDEX)
+                        .setTypes(TYPE)
+                        .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                        .setQuery(QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("commonName", name))
+                                    .must(QueryBuilders.matchQuery("serialNumber", serialNumber))
+                                    .must(QueryBuilders.matchQuery("countryName", country))
+                                    .must(QueryBuilders.matchQuery("stateOrProvinceName", state)))
+                        .setFrom(offset).setSize(limit).setExplain(true)
+                        .get();
+*/
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            
+        }
+        
+        return null;
     }
     
     // PRIVATE FUNCTION CALLS / HELPERS

@@ -5,60 +5,87 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequestInterceptor;
 import org.elasticsearch.action.DocWriteResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.amazonaws.http.AWSRequestSigningApacheInterceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godaddy.evapi.model.BlacklistListModel;
 import com.godaddy.evapi.model.BlacklistModel;
 
 @Service
-public class BlacklistService implements IBlacklistService {
+public class BlacklistService extends BaseAWSService implements IBlacklistService {
     @Autowired
     TransportClient transportClient;
+    
+    @Autowired
+    RestHighLevelClient restClient;
     
     static final String INDEX = "blacklist";
     static final String TYPE = "record";
     
-    ObjectMapper objectMapper = new ObjectMapper();    
-
+    private ObjectMapper objectMapper = new ObjectMapper();  
+        
     // Create/Post
     // Write a new record to the index
     @Override
     public boolean save(BlacklistModel blModel) {
         boolean result = false;
+
         // We need to take out id, since ES stores it as _id. Would duplicate the data.
         Map data = objectMapper.convertValue(blModel, Map.class);
         data.remove("id");
-        IndexRequest request = new IndexRequest(INDEX, TYPE, blModel.getId().toString()).source(data);
-        IndexResponse response = transportClient.index(request).actionGet();
-        if(response.getResult() == DocWriteResponse.Result.CREATED || 
-           response.getResult() == DocWriteResponse.Result.UPDATED) {
-            result = true;
+        try {
+            IndexRequest request = new IndexRequest(INDEX, TYPE, blModel.getId().toString()).source(data);
+            IndexResponse response = restClient.index(request);
+//            IndexResponse response = transportClient.index(request).actionGet();
+            if(response.getResult() == DocWriteResponse.Result.CREATED || 
+               response.getResult() == DocWriteResponse.Result.UPDATED) {
+                result = true;
+            }
+        } catch(Exception ex) {
+            
         }
+        
         return result;
     }
     
     // Delete
     @Override
     public boolean delete(String id) {
-        DeleteResponse response = transportClient.prepareDelete(INDEX, TYPE, id).get();
-        if(response != null && response.getResult() == DocWriteResponse.Result.DELETED) {
-            // Hey, it worked!
-            return true;
+        boolean result = false;
+        try {
+            DeleteRequest deleteRequest = new DeleteRequest(INDEX, TYPE, id);
+            DeleteResponse response = restClient.delete(deleteRequest);
+//            DeleteResponse response = transportClient.prepareDelete(INDEX, TYPE, id).get();
+            if(response != null && response.getResult() == DocWriteResponse.Result.DELETED) {
+                // Hey, it worked!
+                result = true;
+            }
+        } catch (Exception ex) {
+            
         }
-        return false;
+        
+        return result;
     }
     
     // Read/Get
@@ -66,18 +93,19 @@ public class BlacklistService implements IBlacklistService {
     public BlacklistModel findById(String id) {
         BlacklistModel blacklist = null;
         
-        GetRequest request = new GetRequest(INDEX, TYPE, id);
-        GetResponse response = transportClient.get(request).actionGet();
-        if(response.isExists()) {
-            String data = response.getSourceAsString();
-            ObjectMapper objectMapper = new ObjectMapper();
-            try {
-                blacklist = objectMapper.readValue(data, BlacklistModel.class);
-                // id is stored as _id, so we need to grab it
-                blacklist.setId(UUID.fromString(response.getId()));
-            } catch (Exception ex) {
-                ex.printStackTrace();
+        try {
+            GetRequest request = new GetRequest(INDEX, TYPE, id);
+            GetResponse response = restClient.get(request);
+//            GetResponse response = transportClient.get(request).actionGet();
+            if(response.isExists()) {
+                String data = response.getSourceAsString();
+                ObjectMapper objectMapper = new ObjectMapper();
+                    blacklist = objectMapper.readValue(data, BlacklistModel.class);
+                    // id is stored as _id, so we need to grab it
+                    blacklist.setId(UUID.fromString(response.getId()));
             }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         return blacklist;
@@ -85,30 +113,54 @@ public class BlacklistService implements IBlacklistService {
     
     @Override
     public BlacklistListModel findAll(int offset, int limit) {
-        SearchResponse response = transportClient.prepareSearch(INDEX).setTypes(TYPE).setFrom(offset).setSize(limit).get();
-        return findRecords(response, offset, limit);
+        try {
+            SearchRequest request = generateSearchRequest(QueryBuilders.matchAllQuery(), offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+            /*
+            SearchResponse response = transportClient.prepareSearch(INDEX).setTypes(TYPE).setFrom(offset).setSize(limit).get();
+            */
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            return null;
+        }
     }
     
     @Override
     public BlacklistListModel findByCommonName(String commonName, int offset, int limit) {
-        SearchResponse response = transportClient.prepareSearch(INDEX)
-                    .setTypes(TYPE)
-                    .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                    .setQuery(QueryBuilders.matchQuery("commonName", commonName))
-                    .setFrom(offset).setSize(limit).setExplain(true)
-                    .get();
-        return findRecords(response, offset, limit);
+        try {
+            SearchRequest request = generateSearchRequest(QueryBuilders.matchQuery("commonName", commonName), offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+            /*
+            SearchResponse response = transportClient.prepareSearch(INDEX)
+                        .setTypes(TYPE)
+                        .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                        .setQuery(QueryBuilders.matchQuery("commonName", commonName))
+                        .setFrom(offset).setSize(limit).setExplain(true)
+                        .get();
+            */
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            return null;
+        }
     }
     
     @Override
     public BlacklistListModel findByCA(String ca, int offset, int limit) {
-        SearchResponse response = transportClient.prepareSearch(INDEX)
-                    .setTypes(TYPE)
-                    .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                    .setQuery(QueryBuilders.matchQuery("insertedBy", ca))
-                    .setFrom(offset).setSize(limit).setExplain(true)
-                    .get();
-        return findRecords(response, offset, limit);
+        try {
+            SearchRequest request = generateSearchRequest(QueryBuilders.matchQuery("insertedBy", ca), offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+            /*
+            SearchResponse response = transportClient.prepareSearch(INDEX)
+                        .setTypes(TYPE)
+                        .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                        .setQuery(QueryBuilders.matchQuery("insertedBy", ca))
+                        .setFrom(offset).setSize(limit).setExplain(true)
+                        .get();
+            */
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            return null;
+        }
     }
  
     // PRIVATE FUNCTION CALLS / HELPERS

@@ -5,18 +5,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequestInterceptor;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.amazonaws.http.AWSRequestSigningApacheInterceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godaddy.evapi.model.CertificateListModel;
 import com.godaddy.evapi.model.CertificateModel;
@@ -24,16 +31,19 @@ import com.godaddy.evapi.model.OrganizationListModel;
 import com.godaddy.evapi.model.OrganizationModel;
 
 @Service
-public class CertificateService implements ICertificateService {
+public class CertificateService extends BaseAWSService implements ICertificateService {
 
     @Autowired
     TransportClient transportClient;
     
+    @Autowired
+    RestHighLevelClient restClient;
+    
     static final String INDEX = "certificate";
     static final String TYPE = "record";
     
-    ObjectMapper objectMapper = new ObjectMapper();    
-
+    private ObjectMapper objectMapper = new ObjectMapper(); 
+    
     @Override
     public boolean save(CertificateModel certificate) {
         boolean result = false;
@@ -82,10 +92,21 @@ public class CertificateService implements ICertificateService {
 
     @Override
     public CertificateListModel findAll(int offset, int limit) {
-        System.out.println("ASINK: offset=" + Integer.toString(offset) + " limit=" + Integer.toString(limit) );
-        SearchResponse response = transportClient.prepareSearch(INDEX).setTypes(TYPE).setFrom(offset).setSize(limit).get();
-        return findRecords(response, offset, limit);
+        try {
+            SearchRequest request = generateSearchRequest(QueryBuilders.matchAllQuery(), offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+/*
+            SearchResponse response = transportClient.prepareSearch(INDEX).setTypes(TYPE).setFrom(offset).setSize(limit).get();
+*/
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            
+        }
+        
+        return null;
     }
+    
+    // PRIVATE FUNCTION CALLS / HELPERS
 
     private CertificateListModel findRecords(SearchResponse response, int offset, int limit) {
         CertificateListModel certificateList = new CertificateListModel();

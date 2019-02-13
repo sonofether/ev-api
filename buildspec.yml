@@ -17,6 +17,9 @@ env:
     EVAPI_AUTH_FILE: "EVAPI_AUTHFILE_LOCATION"
     EVAPI_PUBLIC_KEY_FILE: "EVAPI_PUBLIC_KEY_LOCATION"
     EVAPI_PRIVATE_KEY_FILE: "EVAPI_PRIVATE_KEY_LOCATION"
+    EVAPI_ENDPOINT: "EVAPI_ENDPOINT"
+    EVAPI_REGION: "EVAPI_REGION"
+    EVAPI_SERVICENAME: "EVAPI_SERVICENAME"
 phases:
   install:
     commands:
@@ -40,6 +43,9 @@ phases:
       - sed -i -e 's/AUTH_FILE/'$EVAPI_AUTH_FILE'/g' src/main/resources/application.properties
       - sed -i -e 's/PUBLIC_KEY/'$EVAPI_PUBLIC_KEY_FILE'/g' src/main/resources/application.properties
       - sed -i -e 's/PRIVATE_KEY/'$EVAPI_PRIVATE_KEY_FILE'/g' src/main/resources/application.properties
+      - sed -i -e 's/ENDPOINT/'$EVAPI_ENDPOINT'/g' src/main/resources/application.properties
+      - sed -i -e 's/REGION/'$EVAPI_REGION'/g' src/main/resources/application.properties
+      - sed -i -e 's/SERVICENAME/'$EVAPI_SERVICENAME'/g' src/main/resources/application.properties
   build:
     commands:
       - echo EV API build started on `date`
