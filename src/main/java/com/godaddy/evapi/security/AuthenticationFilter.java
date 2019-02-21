@@ -58,7 +58,6 @@ public class AuthenticationFilter extends GenericFilterBean {
                 // Do jwt auth
                 validateToken(token);
             }
-            
             chain.doFilter(request, response);
         }
         catch (AuthenticationException aex) {

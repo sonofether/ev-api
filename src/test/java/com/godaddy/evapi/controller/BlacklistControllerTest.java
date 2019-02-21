@@ -115,7 +115,7 @@ public class BlacklistControllerTest {
         when(blacklistService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(null);
         when(blacklistService.save(any())).thenReturn(true);
         ResponseEntity<IdModel> response = blController.createBlacklistEntry(blEntry);
-        assert(response.getStatusCode() == HttpStatus.OK);
+        assert(response.getStatusCode() == HttpStatus.CREATED);
         assertNotNull(response.getBody());
         assert(response.getBody().toJson().length() > 0);
     }

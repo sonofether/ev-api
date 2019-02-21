@@ -31,6 +31,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.godaddy.evapi.model.BlacklistListModel;
+import com.godaddy.evapi.model.IdModel;
 import com.godaddy.evapi.model.OrganizationListModel;
 import com.godaddy.evapi.model.OrganizationModel;
 import com.godaddy.evapi.model.ValidationInputModel;
@@ -41,11 +43,14 @@ import com.godaddy.evapi.service.IOrganizationService;
 import com.godaddy.evapi.service.IValidationService;
 
 import io.jsonwebtoken.Claims;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 @RestController
 @RequestMapping(value = "/validation")
 @EnableHypermediaSupport(type = { EnableHypermediaSupport.HypermediaType.HAL })
-public class ValidationController {
+@Api(value = "Validation Items", description = "Resource for getting and modifying validation items for a certificate")
+public class ValidationController extends BaseController{
     @Value("${files.storage.temp.path}")
     private String basePath;
     
@@ -58,10 +63,8 @@ public class ValidationController {
     @Autowired
     IOrganizationService organizationService;
     
-    private int offset;
-    private int limit;
-
     @GetMapping(value="")
+    @ApiOperation(value = "Gets all validation item records, paginated", response = ValidationListModel.class)
     public ResponseEntity<Resource<ValidationListModel>> GetValidationList(HttpServletRequest request, 
                 @RequestParam( "offset" ) Optional<Integer> offset, @RequestParam( "limit" ) Optional<Integer> limit) {
         setOffsetLimit(offset, limit);
@@ -75,6 +78,7 @@ public class ValidationController {
     }
     
     @GetMapping("/{id}")
+    @ApiOperation(value = "Get a validation item record by id", response = ValidationItemModel.class)
     public ResponseEntity<ValidationItemModel> GetValidationById(@PathVariable(value="id") String id) {
         ValidationItemModel org = validationService.findById(id);        
         if(org == null) {
@@ -85,6 +89,7 @@ public class ValidationController {
     }
     
     @GetMapping(value="/certificate/{certificateId}")
+    @ApiOperation(value = "Get all validation item records for a given certificate id", response = ValidationListModel.class)
     public ResponseEntity<Resource<ValidationListModel>> GetValidationItems(HttpServletRequest request,
                 @PathVariable(value="certificateId") String certificateId,
                 @RequestParam( "offset" ) Optional<Integer> offset, @RequestParam( "limit" ) Optional<Integer> limit) {
@@ -100,7 +105,8 @@ public class ValidationController {
     
     // Generate a record and pass back where they can upload the file
     @PostMapping("")
-    public ResponseEntity<String> AddValidationItem(@RequestBody ValidationInputModel validationItem) {       
+    @ApiOperation(value = "Create a new validation item record", response = IdModel.class)
+    public ResponseEntity<IdModel> AddValidationItem(@RequestBody ValidationInputModel validationItem) {       
         // Make sure this CA owns the cert they are attempting to work with.
         // Grab the auth token, convert to json, and get the ca value
         Claims token = (Claims)SecurityContextHolder.getContext().getAuthentication().getCredentials();
@@ -119,14 +125,15 @@ public class ValidationController {
 
         if(validationService.save(vi)) {
             // TODO: Write data to the block chain           
-            return new ResponseEntity<String>( "{\"id\": \"" + id.toString() + "\"}", HttpStatus.CREATED);
+            return new ResponseEntity<IdModel>(new IdModel(id.toString()), HttpStatus.CREATED);
         }
 
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     } // AddValidationItem
     
     @PutMapping("/{id}")
-    public ResponseEntity<String> UpdateRecord(@PathVariable(value="id") String id,
+    @ApiOperation(value = "Update a validation item by id", response = IdModel.class)
+    public ResponseEntity<IdModel> UpdateRecord(@PathVariable(value="id") String id,
                 @RequestParam("file") MultipartFile file) {
         // Make sure this is a valid record
         ValidationItemModel vi = validationService.findById(id);
@@ -154,8 +161,8 @@ public class ValidationController {
         try {
             writeFile(file, basePath + id);            
             // TODO: AWS S3:  Store file to AWS        
-            //if(fileService.uploadFile(basePath + id, id))
-            if(true)
+            if(fileService.uploadFile(basePath + id, id))
+            //if(true)
             {
                 // TODO: AWS S3: Generate URL where file can be accessed
                 // TODO: AWS S3: No need to update the record with the url, just delete/overwrite the old one.
@@ -169,23 +176,25 @@ public class ValidationController {
             
         }
         finally {
-            // TODO: AWS S3: Uncomment this once we get s3 working
-            //deleteFile(basePath + id);
+            deleteFile(basePath + id);
         }
         
         if(success) {
-            return new ResponseEntity<String>("{\"id\": \"" + id.toString()+ "\"}", HttpStatus.OK);
+            return new ResponseEntity<IdModel>(new IdModel(id.toString()), HttpStatus.OK);
         }
         
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     } // UpdateRecord
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> RemoveRecord(@PathVariable(value="id") String id) {
+    @ApiOperation(value = "Delete a validation item by id", response = HttpStatus.class)
+    public ResponseEntity<HttpStatus> RemoveRecord(@PathVariable(value="id") String id) {
         ValidationItemModel vi = validationService.findById(id);
         if( vi == null ) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+        
+        // TODO: Do we want to delete the file?
         
         vi.setStatus(0);
         validationService.save(vi);
@@ -202,35 +211,6 @@ public class ValidationController {
         fos.write(file.getBytes());
         fos.close();
         return newFile;
-    }
-    
-    // Validate/sanity check the offset and limit values
-    private void setOffsetLimit(Optional<Integer> offset, Optional<Integer> limit) {
-        // Offset must not be negative
-        this.offset =  offset.isPresent() && offset.get() > 0 ? offset.get() : 0;
-        // Limit must be between 1 and 100. If 0, we would not return anything. Negative is right out.
-        this.limit = limit.isPresent() && limit.get() < 101 && limit.get() > 0 ? limit.get() : 25;
-    }
-    
-    private List<Link> generateLinks(HttpServletRequest request, int offset, int limit, int size) {
-        List<Link> links = new ArrayList<Link>();
-        String self = request.getRequestURL().toString() + (request.getQueryString() != null && request.getQueryString().length() > 0 ? "?" + request.getQueryString() : "" );
-        links.add(new Link(self).withRel("self"));
-        links.add(new Link(request.getRequestURL().toString() + "?offset=0&limit=" + limit).withRel("first"));
-        
-        if(offset != 0) {
-            int prevOffset = (offset - limit) > 0 ? offset - limit : 0;
-            Link link = new Link(request.getRequestURL().toString() + "?offset=" + prevOffset + "&limit=" + limit).withRel("prev");
-            links.add(link);
-        }
-        
-        if(size >= limit) {
-            int nextOffset = offset + size;
-            Link link = new Link(request.getRequestURL().toString() + "?offset=" + nextOffset + "&limit=" + limit).withRel("next");
-            links.add(link);
-        }
-        
-        return links;
     }
     
     private void deleteFile(String filePath) {

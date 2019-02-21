@@ -6,6 +6,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 public class LoginControllerTest {
@@ -21,7 +23,7 @@ public class LoginControllerTest {
     @Test
     public void loginControllerPostTest() {
         MockHttpServletResponse response = new MockHttpServletResponse();
-        String result = loginController.authenticateUser("", response);
+        ResponseEntity<HttpStatus> result = loginController.authenticateUser("", response);
         assertNotNull(result);
     }
 }

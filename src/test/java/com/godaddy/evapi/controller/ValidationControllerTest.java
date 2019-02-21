@@ -98,7 +98,7 @@ public class ValidationControllerTest {
     public void validationControllerDeleteTest() {
         when(validationService.findById(anyString())).thenReturn(TestValidationService.generateValidationItem());
         when(validationService.save(any())).thenReturn(true);
-        ResponseEntity<String> result = validationController.RemoveRecord("1234");
+        ResponseEntity<HttpStatus> result = validationController.RemoveRecord("1234");
         assert(result.getStatusCode() == HttpStatus.OK);
     }
     
@@ -106,7 +106,7 @@ public class ValidationControllerTest {
     public void validationControllerDeleteFailureTest() {
         SetupAuthentication();
         when(validationService.findById(anyString())).thenReturn(null);
-        ResponseEntity<String> result = validationController.RemoveRecord("1234");
+        ResponseEntity<HttpStatus> result = validationController.RemoveRecord("1234");
         assert(result.getStatusCode() == HttpStatus.NOT_FOUND);
     }
     

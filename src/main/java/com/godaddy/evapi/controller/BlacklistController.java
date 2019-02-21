@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,15 +30,21 @@ import com.godaddy.evapi.model.OrganizationListModel;
 import com.godaddy.evapi.service.IBlacklistService;
 
 import io.jsonwebtoken.Claims;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @RestController
 @RequestMapping(value = "/blacklist")
+@Api(value = "Greylist", description = "Resource for getting and modifying grey list entries")
 public class BlacklistController extends BaseController {
     @Autowired
     IBlacklistService blacklistService;
     
     // Get all records, paginated
     @GetMapping("")
+    @ApiOperation(value = "Gets all greylist records", response = BlacklistListModel.class)
     public ResponseEntity<Resource<BlacklistListModel>> getAll(HttpServletRequest request,
                 @RequestParam( value="offset") Optional<Integer> offsetValue,
                 @RequestParam( value="limit") Optional<Integer> limitValue) {
@@ -53,8 +60,9 @@ public class BlacklistController extends BaseController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     
-    @DeleteMapping(value="/{id}")
-    public ResponseEntity<HttpStatus> deleteBlacklist(@PathVariable(value="id") String id) {
+    @DeleteMapping("/{id}")
+    @ApiOperation(value = "Deletes a greylist record by id, provided the authenticated caller inserted the record", response = HttpStatus.class)
+    public ResponseEntity<HttpStatus> deleteBlacklist(@ApiParam(name="id", value="Record id") @PathVariable(value="id") String id) {
         boolean success = false;
         String ca = getCAName();
         if(id != null && id.trim().length() > 0) {
@@ -73,13 +81,15 @@ public class BlacklistController extends BaseController {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     
-    @PutMapping(value="/{id}")
-    public ResponseEntity<HttpStatus> updateBlacklist(@PathVariable(value = "id") String id) {
+    @PutMapping("/{id}")
+    @ApiOperation(value = "Updates a greylist record by id, currently not implemented", response = HttpStatus.class)
+    public ResponseEntity<HttpStatus> updateBlacklist(@ApiParam(name="id", value="Record id") @PathVariable(value = "id") String id) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
         
     @PostMapping("")
-    public ResponseEntity<IdModel> createBlacklistEntry(@RequestBody BlacklistInputModel blEntry) {
+    @ApiOperation(value = "Create a new greylist record", response = IdModel.class)
+    public ResponseEntity<IdModel> createBlacklistEntry(@ApiParam(name="greylistEntry", value="Blacklist entry to create") @RequestBody BlacklistInputModel blEntry) {
         String ca = getCAName();
         // Create our new id
         UUID id = UUID.randomUUID();
@@ -91,7 +101,7 @@ public class BlacklistController extends BaseController {
                         blEntry.getSerialNumber(), blEntry.getReason(), ca);
             if(blacklistService.save(blModel)) {
                 // Return created record id
-                return new ResponseEntity<IdModel>(new IdModel(id.toString()), HttpStatus.OK);
+                return new ResponseEntity<IdModel>(new IdModel(id.toString()), HttpStatus.CREATED);
             }
         }
         
@@ -99,7 +109,8 @@ public class BlacklistController extends BaseController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<BlacklistModel> getById(@PathVariable(value="id") String id) {
+    @ApiOperation(value = "Get a greylist record by id", response = BlacklistModel.class)
+    public ResponseEntity<BlacklistModel> getById(@ApiParam(name="id", value="Record id") @PathVariable(value="id") String id) {
         BlacklistModel result = blacklistService.findById(id);
         if(result == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -108,10 +119,11 @@ public class BlacklistController extends BaseController {
     }
        
     @GetMapping("/commonName/{cname}")
+    @ApiOperation(value = "Get a list of greylist records matching a cName", response = BlacklistListModel.class)
     public ResponseEntity<Resource<BlacklistListModel>> getBlacklistByCName(HttpServletRequest request,
                 @RequestParam( value="offset") Optional<Integer> offsetValue,
                 @RequestParam( value="limit") Optional<Integer> limitValue,
-                @PathVariable(value="cname") String cName) {
+                @ApiParam(name="cname", value="Common Name to search for") @PathVariable(value="cname") String cName) {
         setOffsetLimit(offsetValue,limitValue);
         if(cName != null && cName.length() > 2) {
             BlacklistListModel entries = blacklistService.findByCommonName(cName, this.offset, this.limit);
@@ -124,10 +136,11 @@ public class BlacklistController extends BaseController {
     }
     
     @GetMapping("/ca/{ca}")
+    @ApiOperation(value = "Get a list of greylist records inserted a CA", response = BlacklistListModel.class)
     public ResponseEntity<Resource<BlacklistListModel>> getBlacklistByCA(HttpServletRequest request,
                 @RequestParam( value="offset") Optional<Integer> offsetValue,
                 @RequestParam( value="limit") Optional<Integer> limitValue,
-                @PathVariable(value="ca") String ca) {
+                @ApiParam(name="ca", value="The CA to search for") @PathVariable(value="ca") String ca) {
         setOffsetLimit(offsetValue,limitValue);
         if(ca != null && ca.length() > 1) {
             BlacklistListModel entries = blacklistService.findByCA(ca, this.offset, this.limit);
