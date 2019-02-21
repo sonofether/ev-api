@@ -50,13 +50,13 @@ public class CNameControllerTest {
     
     @Test
     public void testDelete() {
-        ResponseEntity<HttpStatus> response = cNameController.delete();
+        ResponseEntity<HttpStatus> response = cNameController.delete("");
         assert(response.getStatusCode() == HttpStatus.NOT_IMPLEMENTED);
     }
     
     @Test
     public void testPut() {
-        ResponseEntity<HttpStatus> response = cNameController.update();
+        ResponseEntity<HttpStatus> response = cNameController.update("");
         assert(response.getStatusCode() == HttpStatus.NOT_IMPLEMENTED);
     }
     
