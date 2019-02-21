@@ -75,7 +75,7 @@ public class OrganizationController extends BaseController {
     
     @PostMapping(value="")
     @ApiOperation(value = "Create a new organization record", response = IdModel.class)
-    public ResponseEntity<IdModel> AddOrganization(@ApiParam(name="organization", value="Organization data to add") @RequestBody OrganizationInputModel organization) {
+    public ResponseEntity<IdModel> AddOrganization(@ApiParam(name="organization", value="Organization data to add", required = true) @RequestBody OrganizationInputModel organization) {
         boolean success = false;
         String ca = getCAName();
         
@@ -105,7 +105,7 @@ public class OrganizationController extends BaseController {
     // This will only ever return ONE record - or at least it should
     @GetMapping(value="/{id}")
     @ApiOperation(value = "Get an organization record by id", response = OrganizationModel.class)
-    public ResponseEntity<OrganizationModel> GetOrganization(@ApiParam(name="id", value="Record id") @PathVariable(value = "id") String orgId) {
+    public ResponseEntity<OrganizationModel> GetOrganization(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value = "id") String orgId) {
         OrganizationModel org = organizationService.findById(orgId);        
         if(org == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -117,21 +117,21 @@ public class OrganizationController extends BaseController {
     // We do not support deletes.
     @DeleteMapping(value="/{id}")
     @ApiOperation(value = "Delete an organization record by id, currently not implemented", response = HttpStatus.class)
-    public ResponseEntity<HttpStatus> DeleteOrganization(@ApiParam(name="id", value="Record id") @PathVariable(value = "id") String orgId) {
+    public ResponseEntity<HttpStatus> DeleteOrganization(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value = "id") String orgId) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
         
     
     @PutMapping(value="/{id}")
     @ApiOperation(value = "Udate an organization record by id, currently not implemented", response = HttpStatus.class)
-    public ResponseEntity<HttpStatus> UpdateOrganization(@ApiParam(name="id", value="Record id") @PathVariable(value = "id") String orgId) {
+    public ResponseEntity<HttpStatus> UpdateOrganization(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value = "id") String orgId) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @GetMapping(value="/name/{name}")
     @ApiOperation(value = "Get all organization records matching an organization name", response = OrganizationListModel.class)
     public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByName(HttpServletRequest request, 
-                @ApiParam(name="name", value="Organization Name to search") @PathVariable(value="name") String name, 
+                @ApiParam(name="name", value="Organization Name to search", required = true) @PathVariable(value="name") String name, 
                 @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByOrganizationName(name, this.offset, this.limit);
@@ -146,7 +146,7 @@ public class OrganizationController extends BaseController {
     @GetMapping(value="/commonname/{cname}")
     @ApiOperation(value = "Get all organization records matching a cName", response = OrganizationListModel.class)
     public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByCommonName(HttpServletRequest request, 
-                @ApiParam(name="cname", value="cName to search") @PathVariable(value="cname") String name, 
+                @ApiParam(name="cname", value="cName to search", required = true) @PathVariable(value="cname") String name, 
                 @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByCommonName(name, this.offset, this.limit);
@@ -161,7 +161,7 @@ public class OrganizationController extends BaseController {
     @GetMapping(value="/serial/{serialNumber}")
     @ApiOperation(value = "Get all organization records matching a serial number", response = OrganizationListModel.class)
     public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationBySerialNumber(HttpServletRequest request, 
-                @ApiParam(name="serialNumber", value="Serial Number to search") @PathVariable(value="serialNumber") String serialNumber, 
+                @ApiParam(name="serialNumber", value="Serial Number to search", required = true) @PathVariable(value="serialNumber") String serialNumber, 
                 @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findBySerialNumber(serialNumber, this.offset, this.limit);
@@ -176,9 +176,9 @@ public class OrganizationController extends BaseController {
     @GetMapping(value="/{name}/{serialNumber}/{country}")
     @ApiOperation(value = "Get all organization records matching an organization name, serial number, and country", response = OrganizationListModel.class)
     public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByNameSerialNumberCountry(HttpServletRequest request, 
-                @ApiParam(name="name", value="Organization Name to search") @PathVariable(value="name") String name, 
-                @ApiParam(name="serialNumber", value="Serial Number to search") @PathVariable(value="serialNumber") String serialNumber,
-                @ApiParam(name="country", value="Country to search") @PathVariable(value="country") String country, 
+                @ApiParam(name="name", value="Organization Name to search", required = true) @PathVariable(value="name") String name, 
+                @ApiParam(name="serialNumber", value="Serial Number to search", required = true) @PathVariable(value="serialNumber") String serialNumber,
+                @ApiParam(name="country", value="Country to search", required = true) @PathVariable(value="country") String country, 
                 @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByNameSerialNumberCountry(name, serialNumber, country,this.offset, this.limit);
@@ -193,10 +193,10 @@ public class OrganizationController extends BaseController {
     @GetMapping(value="/{name}/{serialNumber}/{country}/{state}")
     @ApiOperation(value = "Get all organization records matching an organization name, serial number, country, and state", response = OrganizationListModel.class)
     public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByNameSerialNumberCountryState(HttpServletRequest request, 
-                @ApiParam(name="name", value="Organization Name to search") @PathVariable(value="name") String name, 
-                @ApiParam(name="serialNumber", value="Serial Number to search") @PathVariable(value="serialNumber") String serialNumber,
-                @ApiParam(name="country", value="Country to search") @PathVariable(value="country") String country,
-                @ApiParam(name="state", value="State to search") @PathVariable(value="state") String state, 
+                @ApiParam(name="name", value="Organization Name to search", required = true) @PathVariable(value="name") String name, 
+                @ApiParam(name="serialNumber", value="Serial Number to search", required = true) @PathVariable(value="serialNumber") String serialNumber,
+                @ApiParam(name="country", value="Country to search", required = true) @PathVariable(value="country") String country,
+                @ApiParam(name="state", value="State to search", required = true) @PathVariable(value="state") String state, 
                 @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByNameSerialNumberCountryState(name, serialNumber, country, state, this.offset, this.limit);
@@ -211,7 +211,7 @@ public class OrganizationController extends BaseController {
     // Resource Actions
     @GetMapping(value="/collisionDetect/{name}")
     @ApiOperation(value = "True/False if a match is found for the supplied organization name", response = CollisionModel.class)
-    public CollisionModel CollisionDetectByOrganizationName(@ApiParam(name="name", value="Organization Name to search") @PathVariable(value="name") String name) {
+    public CollisionModel CollisionDetectByOrganizationName(@ApiParam(name="name", value="Organization Name to search", required = true) @PathVariable(value="name") String name) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findByOrganizationName(name, 0, 1);
         if(orgList.getCount() > 0) {
@@ -223,7 +223,7 @@ public class OrganizationController extends BaseController {
     
     @GetMapping(value="/collisionDetect/commonName/{commonName}")
     @ApiOperation(value = "True/False if a match is found for the supplied cName", response = CollisionModel.class)
-    public CollisionModel CollisionDetectByCommonName(@ApiParam(name="commonName", value="Common Name to search")@PathVariable(value="commonName") String commonName) {
+    public CollisionModel CollisionDetectByCommonName(@ApiParam(name="commonName", value="Common Name to search", required = true) @PathVariable(value="commonName") String commonName) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findByCommonName(commonName, 0, 1);
         if(orgList.getCount() > 0) {
@@ -236,7 +236,7 @@ public class OrganizationController extends BaseController {
     
     @GetMapping(value="/collisionDetect/serial/{serialNumber}")
     @ApiOperation(value = "True/False if a match is found for the supplied serial number", response = CollisionModel.class)
-    public CollisionModel CollisionDetectBySerialNumber(@ApiParam(name="serialNumber", value="Serial Number to search") @PathVariable(value="serialNumber") String serialNumber) {
+    public CollisionModel CollisionDetectBySerialNumber(@ApiParam(name="serialNumber", value="Serial Number to search", required = true) @PathVariable(value="serialNumber") String serialNumber) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findBySerialNumber(serialNumber, 0, 1);
         if(orgList.getCount() > 0) {
@@ -248,9 +248,9 @@ public class OrganizationController extends BaseController {
     
     @GetMapping(value="/collisionDetect/{name}/{serialNumber}/{country}")
     @ApiOperation(value = "True/False if a match is found for the supplied organization name, serial number, and country", response = CollisionModel.class)
-    public CollisionModel CollisionDetectByAll(@ApiParam(name="name", value="Organization Name to search") @PathVariable(value="name") String name, 
-                @ApiParam(name="serialNumber", value="Serial Number to search") @PathVariable(value="serialNumber") String serialNumber,
-                @ApiParam(name="country", value="Country to search") @PathVariable(value="country") String country
+    public CollisionModel CollisionDetectByAll(@ApiParam(name="name", value="Organization Name to search", required = true) @PathVariable(value="name") String name, 
+                @ApiParam(name="serialNumber", value="Serial Number to search", required = true) @PathVariable(value="serialNumber") String serialNumber,
+                @ApiParam(name="country", value="Country to search", required = true) @PathVariable(value="country") String country
                 ) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findByNameSerialNumberCountry(name, serialNumber, country, 0, 1);
@@ -263,10 +263,10 @@ public class OrganizationController extends BaseController {
     
     @GetMapping(value="/collisionDetect/{name}/{serialNumber}/{country}/{state}")
     @ApiOperation(value = "True/False if a match is found for the supplied organization name, serial number, country, and state", response = CollisionModel.class)
-    public CollisionModel CollisionDetectByAll(@ApiParam(name="name", value="Organization Name to search") @PathVariable(value="name") String name, 
-                @ApiParam(name="serialNumber", value="Serial Number to search") @PathVariable(value="serialNumber") String serialNumber,
-                @ApiParam(name="country", value="Country to search") @PathVariable(value="country") String country,
-                @ApiParam(name="state", value="State to search") @PathVariable(value="state") String state) {
+    public CollisionModel CollisionDetectByAll(@ApiParam(name="name", value="Organization Name to search", required = true) @PathVariable(value="name") String name, 
+                @ApiParam(name="serialNumber", value="Serial Number to search", required = true) @PathVariable(value="serialNumber") String serialNumber,
+                @ApiParam(name="country", value="Country to search", required = true) @PathVariable(value="country") String country,
+                @ApiParam(name="state", value="State to search", required = true) @PathVariable(value="state") String state) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findByNameSerialNumberCountryState(name, serialNumber, country, state, 0, 1);
         if(orgList.getCount() > 0) {

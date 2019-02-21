@@ -45,6 +45,7 @@ import com.godaddy.evapi.service.IValidationService;
 import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping(value = "/validation")
@@ -79,7 +80,7 @@ public class ValidationController extends BaseController{
     
     @GetMapping("/{id}")
     @ApiOperation(value = "Get a validation item record by id", response = ValidationItemModel.class)
-    public ResponseEntity<ValidationItemModel> GetValidationById(@PathVariable(value="id") String id) {
+    public ResponseEntity<ValidationItemModel> GetValidationById(@PathVariable(value="id", required = true) String id) {
         ValidationItemModel org = validationService.findById(id);        
         if(org == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -91,7 +92,7 @@ public class ValidationController extends BaseController{
     @GetMapping(value="/certificate/{certificateId}")
     @ApiOperation(value = "Get all validation item records for a given certificate id", response = ValidationListModel.class)
     public ResponseEntity<Resource<ValidationListModel>> GetValidationItems(HttpServletRequest request,
-                @PathVariable(value="certificateId") String certificateId,
+                @PathVariable(value="certificateId", required = true) String certificateId,
                 @RequestParam( "offset" ) Optional<Integer> offset, @RequestParam( "limit" ) Optional<Integer> limit) {
         setOffsetLimit(offset, limit);
         ValidationListModel viList = validationService.findByCertificateId(certificateId, this.offset, this.limit);
@@ -133,7 +134,7 @@ public class ValidationController extends BaseController{
     
     @PutMapping("/{id}")
     @ApiOperation(value = "Update a validation item by id", response = IdModel.class)
-    public ResponseEntity<IdModel> UpdateRecord(@PathVariable(value="id") String id,
+    public ResponseEntity<IdModel> UpdateRecord(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value="id") String id,
                 @RequestParam("file") MultipartFile file) {
         // Make sure this is a valid record
         ValidationItemModel vi = validationService.findById(id);
@@ -188,7 +189,7 @@ public class ValidationController extends BaseController{
     
     @DeleteMapping("/{id}")
     @ApiOperation(value = "Delete a validation item by id", response = HttpStatus.class)
-    public ResponseEntity<HttpStatus> RemoveRecord(@PathVariable(value="id") String id) {
+    public ResponseEntity<HttpStatus> RemoveRecord(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value="id") String id) {
         ValidationItemModel vi = validationService.findById(id);
         if( vi == null ) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
