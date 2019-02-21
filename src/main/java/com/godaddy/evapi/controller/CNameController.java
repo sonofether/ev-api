@@ -46,13 +46,13 @@ public class CNameController {
     
     @DeleteMapping("/{id}")
     @ApiOperation(value = "Delete greylist records. Currently not implemented - Use the blacklist enpoint instead", response = HttpStatus.class)
-    public ResponseEntity<HttpStatus> delete() {
+    public ResponseEntity<HttpStatus> delete(@ApiParam(name="id", value="Record id") @PathVariable(value="id") String id) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
     
     @PutMapping("/{id}")
     @ApiOperation(value = "Update greylist records. Currently not implemented - Use the blacklist enpoint instead", response = HttpStatus.class)
-    public ResponseEntity<HttpStatus> update() {
+    public ResponseEntity<HttpStatus> update(@ApiParam(name="id", value="Record id") @PathVariable(value="id") String id) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
     
@@ -74,7 +74,7 @@ public class CNameController {
     
     @GetMapping("/flaglist/{cname}")
     @ApiOperation(value = "True/False lookup for a matching greylist record by cName.", response = BlacklistDTOModel.class)
-    public BlacklistDTOModel getBlacklistByCName(@ApiParam(name="cName", value="cName to search for") @PathVariable(value="cname") String cName) {
+    public BlacklistDTOModel getBlacklistByCName(@ApiParam(name="cname", value="cName to search for") @PathVariable(value="cname") String cName) {
         BlacklistDTOModel result = new BlacklistDTOModel();
         if(cName != null && cName.length() > 2) {
             BlacklistListModel entries = blacklistService.findByCommonName(cName,0, 1);
