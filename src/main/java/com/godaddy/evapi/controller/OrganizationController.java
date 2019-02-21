@@ -143,10 +143,10 @@ public class OrganizationController extends BaseController {
         return ResponseEntity.ok(resource);
     }
     
-    @GetMapping(value="/commonname/{name}")
+    @GetMapping(value="/commonname/{cname}")
     @ApiOperation(value = "Get all organization records matching a cName", response = OrganizationListModel.class)
     public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByCommonName(HttpServletRequest request, 
-                @ApiParam(name="cName", value="cName to search") @PathVariable(value="name") String name, 
+                @ApiParam(name="cname", value="cName to search") @PathVariable(value="cname") String name, 
                 @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByCommonName(name, this.offset, this.limit);
