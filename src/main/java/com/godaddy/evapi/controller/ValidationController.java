@@ -80,7 +80,7 @@ public class ValidationController extends BaseController{
     
     @GetMapping("/{id}")
     @ApiOperation(value = "Get a validation item record by id", response = ValidationItemModel.class)
-    public ResponseEntity<ValidationItemModel> GetValidationById(@PathVariable(value="id", required = true) String id) {
+    public ResponseEntity<ValidationItemModel> GetValidationById(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value="id") String id) {
         ValidationItemModel org = validationService.findById(id);        
         if(org == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -92,7 +92,7 @@ public class ValidationController extends BaseController{
     @GetMapping(value="/certificate/{certificateId}")
     @ApiOperation(value = "Get all validation item records for a given certificate id", response = ValidationListModel.class)
     public ResponseEntity<Resource<ValidationListModel>> GetValidationItems(HttpServletRequest request,
-                @PathVariable(value="certificateId", required = true) String certificateId,
+                @ApiParam(name="certificateId", value="Certificate id", required = true) @PathVariable(value="certificateId") String certificateId,
                 @RequestParam( "offset" ) Optional<Integer> offset, @RequestParam( "limit" ) Optional<Integer> limit) {
         setOffsetLimit(offset, limit);
         ValidationListModel viList = validationService.findByCertificateId(certificateId, this.offset, this.limit);
