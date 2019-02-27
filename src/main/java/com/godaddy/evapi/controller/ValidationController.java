@@ -154,14 +154,14 @@ public class ValidationController extends BaseController{
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        // TODO: AWS S3: Url will be the AWS location + the id
-        String itemUrl = "";
+        // Url will be the AWS location + the id
+        String itemUrl = fileService.getItemUrl(id);
         boolean success = false;
         
         // Unique identifier for file to upload - (just use the id)
         try {
-            writeFile(file, basePath + id);            
-            // TODO: AWS S3:  Store file to AWS        
+            writeFile(file, basePath + id);
+            // Store file to AWS
             if(fileService.uploadFile(basePath + id, id))
             //if(true)
             {
@@ -170,6 +170,7 @@ public class ValidationController extends BaseController{
 
                 // Update the record.
                 vi.setFileName(file.getOriginalFilename());
+                vi.setItemUrl(itemUrl);
                 validationService.save(vi);
                 success = true;
             }

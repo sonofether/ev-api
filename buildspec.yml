@@ -7,8 +7,6 @@ env:
     EVAPI_PRIVATE_KEY: "EVAPI_PRIVATE_KEY"
     EVAPI_AUTHFILE: "EVAPI_AUTHFILE"
     EVAPI_BUCKET: "EVAPI_S3_BUCKET_NAME"
-    EVAPI_ACCESSID: "EVAPI_S3_BUCKET_ACCESS_ID"
-    EVAPI_SECRETID: "EVAPI_S3_BUCKET_SECRET"
     EVAPI_ESPORT: "EVAPI_ELASTIC_PORT"
     EVAPI_ESHOST: "EVAPI_ELASTIC_HOST"
     EVAPI_ESNAME: "EVAPI_ELASTIC_NAME"
@@ -33,8 +31,6 @@ phases:
       - openssl pkcs8 -topk8 -inform PEM -outform DER -in /Users/private_key.pem -out /Users/private_key.der -nocrypt
       - openssl rsa -in /Users/private_key.pem -pubout -outform DER -out /Users/public_key.der
       - sed -i -e 's/BUCKETNAME/'$EVAPI_BUCKET'/g' src/main/resources/application.properties
-      - sed -i -e 's/ACCESSID/'$EVAPI_ACCESSID'/g' src/main/resources/application.properties
-      - sed -i -e 's/SECRETID/'$EVAPI_SECRETID'/g' src/main/resources/application.properties
       - sed -i -e 's/DEFAULTSALT/'$EVAPI_DEFAULT_SALT'/g' src/main/resources/application.properties
       - sed -i -e 's/TIMEOUT/'$EVAPI_TIMEOUT'/g' src/main/resources/application.properties
       - sed -i -e 's/ESNAME/'$EVAPI_ESNAME'/g' src/main/resources/application.properties

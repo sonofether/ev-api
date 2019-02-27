@@ -20,4 +20,6 @@ public interface IFileService {
     // This is just a copy followed by a delete.
     public boolean renameFile(String fileName, String newFileName);    
     
+    public String getItemUrl(String fileName);
+    
 }

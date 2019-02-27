@@ -148,4 +148,9 @@ public class AWSFileService implements IFileService {
         return false;
     }
     
+    @Override
+    public String getItemUrl(String fileName) {
+        return "https://s3.amazonaws.com/" + bucketName + "/" + fileName;
+    }
+    
 }
