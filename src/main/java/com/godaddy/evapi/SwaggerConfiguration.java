@@ -80,6 +80,7 @@ public class SwaggerConfiguration extends WebMvcConfigurationSupport {
     private Predicate<String> paths() {
         return or(
             regex("/blacklist.*"),
+            regex("/flaglist.*"),
             regex("/org.*"),
             regex("/cname.*"),
             regex("/validation.*"),

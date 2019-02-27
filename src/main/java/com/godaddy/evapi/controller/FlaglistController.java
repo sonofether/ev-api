@@ -77,14 +77,14 @@ public class FlaglistController extends BaseController {
     }
     
     @PutMapping("/{id}")
-    @ApiOperation(value = "Updates a greylist record by id, currently not implemented", response = HttpStatus.class)
-    public ResponseEntity<HttpStatus> updateBlacklist(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value = "id") String id) {
+    @ApiOperation(value = "Updates a flag list record by id, currently not implemented", response = HttpStatus.class)
+    public ResponseEntity<HttpStatus> updateFlaglist(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value = "id") String id) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
         
     @PostMapping("")
-    @ApiOperation(value = "Create a new greylist record", response = IdModel.class)
-    public ResponseEntity<IdModel> createFlaglistEntry(@ApiParam(name="greylistEntry", value="Blacklist entry to create") @RequestBody FlaglistInputModel flEntry) {
+    @ApiOperation(value = "Create a new flag list record", response = IdModel.class)
+    public ResponseEntity<IdModel> createFlaglistEntry(@ApiParam(name="flaglistEntry", value="Flag list entry to create") @RequestBody FlaglistInputModel flEntry) {
         String ca = getCAName();
         // Create our new id
         UUID id = UUID.randomUUID();
@@ -117,7 +117,7 @@ public class FlaglistController extends BaseController {
     }
     
     @GetMapping("/{id}")
-    @ApiOperation(value = "Get a greylist record by id", response = FlaglistModel.class)
+    @ApiOperation(value = "Get a flag list record by id", response = FlaglistModel.class)
     public ResponseEntity<FlaglistModel> getById(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value="id") String id) {
         FlaglistModel result = flaglistService.findById(id);
         if(result == null) {
@@ -127,8 +127,8 @@ public class FlaglistController extends BaseController {
     }
        
     @GetMapping("/commonName/{cname}")
-    @ApiOperation(value = "Get a list of greylist records matching a cName", response = FlaglistListModel.class)
-    public ResponseEntity<Resource<FlaglistListModel>> getBlacklistByCName(HttpServletRequest request,
+    @ApiOperation(value = "Get a list of flag list records matching a cName", response = FlaglistListModel.class)
+    public ResponseEntity<Resource<FlaglistListModel>> getFlaglistByCName(HttpServletRequest request,
                 @RequestParam( value="offset") Optional<Integer> offsetValue,
                 @RequestParam( value="limit") Optional<Integer> limitValue,
                 @ApiParam(name="cname", value="Common Name to search for", required = true) @PathVariable(value="cname") String cName) {
@@ -144,8 +144,8 @@ public class FlaglistController extends BaseController {
     }
     
     @GetMapping("/ca/{ca}")
-    @ApiOperation(value = "Get a list of greylist records inserted a CA", response = FlaglistListModel.class)
-    public ResponseEntity<Resource<FlaglistListModel>> getBlacklistByCA(HttpServletRequest request,
+    @ApiOperation(value = "Get a list of flag list records inserted a CA", response = FlaglistListModel.class)
+    public ResponseEntity<Resource<FlaglistListModel>> getFlaglistByCA(HttpServletRequest request,
                 @RequestParam( value="offset") Optional<Integer> offsetValue,
                 @RequestParam( value="limit") Optional<Integer> limitValue,
                 @ApiParam(name="ca", value="The CA to search for", required = true) @PathVariable(value="ca") String ca) {

@@ -79,7 +79,7 @@ public class FlaglistControllerTest {
         request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(flaglistService.findByCA(anyString(), anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
-        ResponseEntity<Resource<FlaglistListModel>> response = flController.getBlacklistByCA(request, optInt, optInt, "My CA");
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByCA(request, optInt, optInt, "My CA");
         assert(response.getStatusCode() == HttpStatus.OK);
         FlaglistListModel flList = response.getBody().getContent();
         assertNotNull(flList);
@@ -96,7 +96,7 @@ public class FlaglistControllerTest {
         request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(flaglistService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
-        ResponseEntity<Resource<FlaglistListModel>> response = flController.getBlacklistByCName(request, optInt, optInt, "example.com");
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByCName(request, optInt, optInt, "example.com");
         assert(response.getStatusCode() == HttpStatus.OK);
         FlaglistListModel flList = response.getBody().getContent();
         assertNotNull(flList);

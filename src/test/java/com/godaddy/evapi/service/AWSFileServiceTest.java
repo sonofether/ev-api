@@ -12,8 +12,6 @@ import org.springframework.web.util.UrlPathHelper;
 
 public class AWSFileServiceTest {
     private String bucketName = "aws.bucket";
-    private String accessId = "accesId";
-    private String secretAccessId = "supersecret";
     
     @InjectMocks
     private AWSFileService fileService;
@@ -23,8 +21,6 @@ public class AWSFileServiceTest {
         MockitoAnnotations.initMocks(this);
 
         ReflectionTestUtils.setField(fileService, "bucketName", bucketName, String.class);
-        ReflectionTestUtils.setField(fileService, "accessId", accessId, String.class);
-        ReflectionTestUtils.setField(fileService, "secretId", secretAccessId, String.class);
     }
     
     @Test
