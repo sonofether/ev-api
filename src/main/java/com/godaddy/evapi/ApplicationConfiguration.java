@@ -19,6 +19,7 @@ import com.amazonaws.auth.AWS4Signer;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.http.AWSRequestSigningApacheInterceptor;
 
 // Load the properties file so we can use it.
@@ -42,17 +43,10 @@ public class ApplicationConfiguration {
     
     @Value("${aws.es.region}")
     protected String region;
-    
-    @Value("${aws.es.access.id}")
-    protected String accessId;
 
-    @Value("${aws.es.access.secretid}")
-    protected String secretId;
-
-    
     @Bean(destroyMethod="close")
     public RestHighLevelClient restClient() throws Exception {
-        HttpRequestInterceptor interceptor = new AWSRequestSigningApacheInterceptor(getServiceName(), generateSigner(), generateCredentialProvider());
+        HttpRequestInterceptor interceptor = new AWSRequestSigningApacheInterceptor(getServiceName(), generateSigner(), new DefaultAWSCredentialsProviderChain());
         return new RestHighLevelClient(RestClient.builder(HttpHost.create(getEndpoint())).setHttpClientConfigCallback(hacb -> hacb.addInterceptorLast(interceptor)));
     }
     
@@ -76,10 +70,5 @@ public class ApplicationConfiguration {
         signer.setServiceName(serviceName);
         signer.setRegionName(region);        
         return signer;
-    }
-   
-    private AWSStaticCredentialsProvider generateCredentialProvider() {
-        AWSCredentials creds = new BasicAWSCredentials(accessId, secretId);
-        return new AWSStaticCredentialsProvider(creds);
-    }
+    }   
 }

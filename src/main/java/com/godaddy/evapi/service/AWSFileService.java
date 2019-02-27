@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -30,19 +31,11 @@ public class AWSFileService implements IFileService {
     @Value("${aws.s3.bucket.name}")
     private String bucketName;
     
-    @Value("${aws.s3.access.id}")
-    private String accessId;
-
-    @Value("${aws.s3.access.secretid}")
-    private String secretId;
-
-    
     @Override
     public boolean uploadFile(String filePath, String fileName) {
-        BasicAWSCredentials creds = new BasicAWSCredentials(accessId, secretId);
         final AmazonS3 s3 = AmazonS3Client.builder()
                     .withRegion(Regions.US_EAST_1)
-                    .withCredentials(new AWSStaticCredentialsProvider(creds))
+                    .withCredentials(new DefaultAWSCredentialsProviderChain())
                     .build();
         try {
             PutObjectResult result = s3.putObject(bucketName, fileName, new File(filePath));
@@ -56,10 +49,9 @@ public class AWSFileService implements IFileService {
 
     @Override
     public boolean downloadFile(String fileName, String filePath) {
-        BasicAWSCredentials creds = new BasicAWSCredentials(accessId, secretId);
         final AmazonS3 s3 = AmazonS3Client.builder()
                     .withRegion(Regions.US_EAST_1)
-                    .withCredentials(new AWSStaticCredentialsProvider(creds))
+                    .withCredentials(new DefaultAWSCredentialsProviderChain())
                     .build();
         try {
             S3Object o = s3.getObject(bucketName, fileName);
@@ -86,10 +78,9 @@ public class AWSFileService implements IFileService {
 
     @Override
     public boolean deleteFile(String fileName) {
-        BasicAWSCredentials creds = new BasicAWSCredentials(accessId, secretId);
         final AmazonS3 s3 = AmazonS3Client.builder()
                     .withRegion(Regions.US_EAST_1)
-                    .withCredentials(new AWSStaticCredentialsProvider(creds))
+                    .withCredentials(new DefaultAWSCredentialsProviderChain())
                     .build();
         try {
             s3.deleteObject(bucketName, fileName);
@@ -103,10 +94,9 @@ public class AWSFileService implements IFileService {
     @Override
     public List<String> listFiles() {
         List<String> names = new ArrayList<String>();
-        BasicAWSCredentials creds = new BasicAWSCredentials(accessId, secretId);
         final AmazonS3 s3 = AmazonS3Client.builder()
                     .withRegion(Regions.US_EAST_1)
-                    .withCredentials(new AWSStaticCredentialsProvider(creds))
+                    .withCredentials(new DefaultAWSCredentialsProviderChain())
                     .build();
         ListObjectsV2Result result = s3.listObjectsV2(bucketName);
         List<S3ObjectSummary> objects = result.getObjectSummaries();
@@ -122,10 +112,9 @@ public class AWSFileService implements IFileService {
 
     @Override
     public boolean copyFile(String fileName, String newFileName) {
-        BasicAWSCredentials creds = new BasicAWSCredentials(accessId, secretId);
         final AmazonS3 s3 = AmazonS3Client.builder()
                     .withRegion(Regions.US_EAST_1)
-                    .withCredentials(new AWSStaticCredentialsProvider(creds))
+                    .withCredentials(new DefaultAWSCredentialsProviderChain())
                     .build();
         try {
             CopyObjectResult result = s3.copyObject(bucketName, fileName, bucketName, newFileName);
@@ -147,10 +136,9 @@ public class AWSFileService implements IFileService {
 
     @Override
     public boolean doesFileExist(String fileName) {
-        BasicAWSCredentials creds = new BasicAWSCredentials(accessId, secretId);
         final AmazonS3 s3 = AmazonS3Client.builder()
                     .withRegion(Regions.US_EAST_1)
-                    .withCredentials(new AWSStaticCredentialsProvider(creds))
+                    .withCredentials(new DefaultAWSCredentialsProviderChain())
                     .build();
         try {
             return s3.doesObjectExist(bucketName, fileName);
