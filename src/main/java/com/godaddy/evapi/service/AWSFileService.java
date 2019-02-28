@@ -19,6 +19,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CopyObjectResult;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.PutObjectResult;
@@ -39,6 +40,8 @@ public class AWSFileService implements IFileService {
                     .build();
         try {
             PutObjectResult result = s3.putObject(bucketName, fileName, new File(filePath));
+            // Make the object publicly readable
+            s3.setObjectAcl(bucketName, fileName, CannedAccessControlList.PublicRead);
             return true;
         } catch (AmazonServiceException e) {
             System.err.println(e.getErrorMessage());

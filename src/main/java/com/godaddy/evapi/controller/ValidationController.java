@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -154,20 +156,20 @@ public class ValidationController extends BaseController{
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        // Url will be the AWS location + the id
-        String itemUrl = fileService.getItemUrl(id);
-        boolean success = false;
-        
+        boolean success = false;        
         // Unique identifier for file to upload - (just use the id)
         try {
+            // Create our temporary storage directory if it is missing.
+            if(!Files.exists(Paths.get(basePath), LinkOption.NOFOLLOW_LINKS)) {
+                Files.createDirectory(Paths.get(basePath));
+            }
+            // Store the file locally for a bit so we can write it to remote storage
             writeFile(file, basePath + id);
             // Store file to AWS
             if(fileService.uploadFile(basePath + id, id))
-            //if(true)
             {
-                // TODO: AWS S3: Generate URL where file can be accessed
-                // TODO: AWS S3: No need to update the record with the url, just delete/overwrite the old one.
-
+                // Url will be the AWS location + the id
+                String itemUrl = fileService.getItemUrl(id);
                 // Update the record.
                 vi.setFileName(file.getOriginalFilename());
                 vi.setItemUrl(itemUrl);
@@ -197,6 +199,7 @@ public class ValidationController extends BaseController{
         }
         
         // TODO: Do we want to delete the file?
+        //fileService.deleteFile(vi.getId().toString());
         
         vi.setStatus(0);
         validationService.save(vi);

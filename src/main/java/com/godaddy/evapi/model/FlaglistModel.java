@@ -3,6 +3,8 @@ package com.godaddy.evapi.model;
 import java.util.Date;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class FlaglistModel {
     private UUID id;
     private String organizationName;
@@ -12,6 +14,7 @@ public class FlaglistModel {
     private String insertedBy;
     private String source;
     private int severity;
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ssy")
     private Date lastUpdated;
     
     public FlaglistModel() {
