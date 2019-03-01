@@ -74,14 +74,18 @@ public class BasicAuthenticationProviderTest {
     
     /*
     @Test
-    public void buildAuthFile() {
+    public void buildAuthFile() throws Exception {
+        String fileName = "";
+        String defaultSaltq = "";
+
+        System.out.println(fileName);
+        BufferedWriter bw = new BufferedWriter(new FileWriter(fileName));
+
         String user = OneWayEncryption.HashValue("asink", defaultSaltq.getBytes());
         byte[] salt = OneWayEncryption.getSalt();
         String password = OneWayEncryption.HashValue("password", salt); 
-        
-        System.out.println(fileName);
-        BufferedWriter bw = new BufferedWriter(new FileWriter(fileName));
-        bw.write(user + "\t" + password + "\t" + java.util.Base64.getMimeEncoder().encodeToString(salt) + "\tAdam's Super Cool and Authorized CA");
+        bw.write(user + "\t" + password + "\t" + java.util.Base64.getMimeEncoder().encodeToString(salt) + "\tAdam's Authorized CA\n");
+               
         bw.close();
     }
     
