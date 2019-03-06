@@ -14,7 +14,6 @@ public class FlaglistModel {
     private String insertedBy;
     private String source;
     private int severity;
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ssy")
     private Date lastUpdated;
     
     public FlaglistModel() {

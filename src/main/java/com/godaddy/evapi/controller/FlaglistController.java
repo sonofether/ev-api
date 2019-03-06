@@ -92,9 +92,9 @@ public class FlaglistController extends BaseController {
         // Insert the record is the data supplied is good
         if(validateNewRecord(flEntry)) {
             // Serial number is blank. Not sure we even need it.
-            FlaglistModel blModel = new FlaglistModel(id, flEntry.getOrganizationName(), flEntry.getCommonName(), 
+            FlaglistModel flModel = new FlaglistModel(id, flEntry.getOrganizationName(), flEntry.getCommonName(), 
                         flEntry.getSerialNumber(), flEntry.getReason(), ca, "ca", 2);
-            if(flaglistService.save(blModel)) {
+            if(flaglistService.save(flModel)) {
                 // Return created record id
                 return new ResponseEntity<IdModel>(new IdModel(id.toString()), HttpStatus.CREATED);
             }

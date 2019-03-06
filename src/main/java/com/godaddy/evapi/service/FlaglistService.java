@@ -55,7 +55,7 @@ public class FlaglistService  extends BaseAWSService implements IFlaglistService
                 result = true;
             }
         } catch(Exception ex) {
-            
+            ex.printStackTrace();
         }
         
         return result;
@@ -73,7 +73,7 @@ public class FlaglistService  extends BaseAWSService implements IFlaglistService
                 result = true;
             }
         } catch (Exception ex) {
-            
+            ex.printStackTrace();
         }
         
         return result;
