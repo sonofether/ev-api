@@ -32,38 +32,38 @@ import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping(value = "/cname")
-@Api(value = "CName", description = "Resource for determining if an entry is in the grey list")
+@Api(value = "CName", description = "Resource for determining if an entry is in the flag list")
 public class CNameController {
     @Autowired
     IBlacklistService blacklistService;
     
     // Return not implemented for the basic CRUD operations.
     @GetMapping("")
-    @ApiOperation(value = "Get all greylist records. Currently not implemented - Use the blacklist enpoint instead", response = HttpStatus.class)
+    @ApiOperation(value = "Get all flag list records. Currently not implemented - Use the flaglist enpoint instead", response = HttpStatus.class)
     public ResponseEntity<HttpStatus> getAll() {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
     
     @DeleteMapping("/{id}")
-    @ApiOperation(value = "Delete greylist records. Currently not implemented - Use the blacklist enpoint instead", response = HttpStatus.class)
+    @ApiOperation(value = "Delete flag list records. Currently not implemented - Use the flaglist enpoint instead", response = HttpStatus.class)
     public ResponseEntity<HttpStatus> delete(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value="id") String id) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
     
     @PutMapping("/{id}")
-    @ApiOperation(value = "Update greylist records. Currently not implemented - Use the blacklist enpoint instead", response = HttpStatus.class)
+    @ApiOperation(value = "Update flag list records. Currently not implemented - Use the flaglist enpoint instead", response = HttpStatus.class)
     public ResponseEntity<HttpStatus> update(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value="id") String id) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
     
     @PostMapping("")
-    @ApiOperation(value = "Create all greylist records. Currently not implemented - Use the blacklist enpoint instead", response = HttpStatus.class)
+    @ApiOperation(value = "Create all flag list records. Currently not implemented - Use the flaglist enpoint instead", response = HttpStatus.class)
     public ResponseEntity<HttpStatus> createEntry() {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
     
     @GetMapping("/{id}")
-    @ApiOperation(value = "Get a greylist record by id.", response = BlacklistModel.class)
+    @ApiOperation(value = "Get a flag list record by id.", response = BlacklistModel.class)
     public ResponseEntity<BlacklistModel> getById(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value="id") String id) {
         BlacklistModel result = blacklistService.findById(id);
         if(result == null) {
@@ -73,7 +73,7 @@ public class CNameController {
     }    
     
     @GetMapping("/flaglist/{cname}")
-    @ApiOperation(value = "True/False lookup for a matching greylist record by cName.", response = BlacklistDTOModel.class)
+    @ApiOperation(value = "True/False lookup for a matching flag list record by cName.", response = BlacklistDTOModel.class)
     public BlacklistDTOModel getBlacklistByCName(@ApiParam(name="cname", value="cName to search for", required = true) @PathVariable(value="cname") String cName) {
         BlacklistDTOModel result = new BlacklistDTOModel();
         if(cName != null && cName.length() > 2) {

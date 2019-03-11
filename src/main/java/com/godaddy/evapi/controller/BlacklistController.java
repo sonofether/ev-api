@@ -37,14 +37,14 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @RestController
 @RequestMapping(value = "/blacklist")
-@Api(value = "Greylist", description = "Resource for getting and modifying grey list entries")
+@Api(value = "Blacklist", description = "Resource for getting and modifying black list entries")
 public class BlacklistController extends BaseController {
     @Autowired
     IBlacklistService blacklistService;
     
     // Get all records, paginated
     @GetMapping("")
-    @ApiOperation(value = "Gets all greylist records", response = BlacklistListModel.class)
+    @ApiOperation(value = "Gets all blacklist records", response = BlacklistListModel.class)
     public ResponseEntity<Resource<BlacklistListModel>> getAll(HttpServletRequest request,
                 @RequestParam( value="offset") Optional<Integer> offsetValue,
                 @RequestParam( value="limit") Optional<Integer> limitValue) {
@@ -61,7 +61,7 @@ public class BlacklistController extends BaseController {
     }
     
     @DeleteMapping("/{id}")
-    @ApiOperation(value = "Deletes a greylist record by id, provided the authenticated caller inserted the record", response = HttpStatus.class)
+    @ApiOperation(value = "Deletes a blacklist record by id, provided the authenticated caller inserted the record", response = HttpStatus.class)
     public ResponseEntity<HttpStatus> deleteBlacklist(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value="id") String id) {
         boolean success = false;
         String ca = getCAName();
@@ -82,14 +82,14 @@ public class BlacklistController extends BaseController {
     }
     
     @PutMapping("/{id}")
-    @ApiOperation(value = "Updates a greylist record by id, currently not implemented", response = HttpStatus.class)
+    @ApiOperation(value = "Updates a blacklist record by id, currently not implemented", response = HttpStatus.class)
     public ResponseEntity<HttpStatus> updateBlacklist(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value = "id") String id) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
         
     @PostMapping("")
-    @ApiOperation(value = "Create a new greylist record", response = IdModel.class)
-    public ResponseEntity<IdModel> createBlacklistEntry(@ApiParam(name="greylistEntry", value="Blacklist entry to create") @RequestBody BlacklistInputModel blEntry) {
+    @ApiOperation(value = "Create a new blacklist record", response = IdModel.class)
+    public ResponseEntity<IdModel> createBlacklistEntry(@ApiParam(name="blacklistEntry", value="Blacklist entry to create") @RequestBody BlacklistInputModel blEntry) {
         String ca = getCAName();
         // Create our new id
         UUID id = UUID.randomUUID();
@@ -109,7 +109,7 @@ public class BlacklistController extends BaseController {
     }
     
     @GetMapping("/{id}")
-    @ApiOperation(value = "Get a greylist record by id", response = BlacklistModel.class)
+    @ApiOperation(value = "Get a blacklist record by id", response = BlacklistModel.class)
     public ResponseEntity<BlacklistModel> getById(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value="id") String id) {
         BlacklistModel result = blacklistService.findById(id);
         if(result == null) {
@@ -119,7 +119,7 @@ public class BlacklistController extends BaseController {
     }
        
     @GetMapping("/commonName/{cname}")
-    @ApiOperation(value = "Get a list of greylist records matching a cName", response = BlacklistListModel.class)
+    @ApiOperation(value = "Get a list of blacklist records matching a cName", response = BlacklistListModel.class)
     public ResponseEntity<Resource<BlacklistListModel>> getBlacklistByCName(HttpServletRequest request,
                 @RequestParam( value="offset") Optional<Integer> offsetValue,
                 @RequestParam( value="limit") Optional<Integer> limitValue,
@@ -136,7 +136,7 @@ public class BlacklistController extends BaseController {
     }
     
     @GetMapping("/ca/{ca}")
-    @ApiOperation(value = "Get a list of greylist records inserted a CA", response = BlacklistListModel.class)
+    @ApiOperation(value = "Get a list of blacklist records inserted a CA", response = BlacklistListModel.class)
     public ResponseEntity<Resource<BlacklistListModel>> getBlacklistByCA(HttpServletRequest request,
                 @RequestParam( value="offset") Optional<Integer> offsetValue,
                 @RequestParam( value="limit") Optional<Integer> limitValue,
