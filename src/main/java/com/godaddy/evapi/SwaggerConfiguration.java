@@ -79,7 +79,8 @@ public class SwaggerConfiguration extends WebMvcConfigurationSupport {
     // Select any API that matches one of these paths
     private Predicate<String> paths() {
         return or(
-            regex("/blacklist.*"),
+            // Pull this from the swagger
+            //regex("/blacklist.*"),
             regex("/flaglist.*"),
             regex("/org.*"),
             regex("/cname.*"),
