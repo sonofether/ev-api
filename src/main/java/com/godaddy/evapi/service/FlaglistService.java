@@ -111,7 +111,18 @@ public class FlaglistService  extends BaseAWSService implements IFlaglistService
             return null;
         }
     }
-    
+
+    @Override
+    public FlaglistListModel findByOrganizationName(String organizationName, int offset, int limit) {
+        try {
+            SearchRequest request = generateSearchRequest(QueryBuilders.matchQuery("organizationName", organizationName), offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
     @Override
     public FlaglistListModel findByCommonName(String commonName, int offset, int limit) {
         try {

@@ -24,6 +24,11 @@ public class TestFlaglistService implements IFlaglistService {
         return generateFlaglistList();
     }
     
+    @Override
+    public FlaglistListModel findByOrganizationName(String organizationName, int offset, int limit) {
+        return generateFlaglistList();
+    }
+
     public static FlaglistListModel generateFlaglistList() {
         FlaglistListModel flList = new FlaglistListModel();
         flList.setCount(1);
