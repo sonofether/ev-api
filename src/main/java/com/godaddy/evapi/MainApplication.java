@@ -22,19 +22,4 @@ public class MainApplication {
         SpringApplication.run(MainApplication.class, args);
     }
     
-    /*
-    @Configuration
-    public static class PathMatchingConfigurationAdapter extends WebMvcConfigurerAdapter {
-        
-        @Override
-        public void configurePathMatch(PathMatchConfigurer configurer) {
-            configurer.setUseSuffixPatternMatch(false);
-        }
- 
-        @Override
-        public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-            configurer.favorPathExtension(false);
-        }
-    }
-    */
 }

@@ -24,11 +24,14 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+        httpSecurity
+        .csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
         .authorizeRequests().anyRequest().authenticated().and()
         .anonymous().disable().exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint());
   
         httpSecurity.addFilterBefore(new AuthenticationFilter(authenticationManager()),BasicAuthenticationFilter.class);
+        
+        httpSecurity.requiresChannel().anyRequest().requiresSecure();
     }
     
     @Override

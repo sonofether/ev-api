@@ -141,6 +141,24 @@ public class FlaglistController extends BaseController {
             }
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    
+    }
+
+    @GetMapping("/name/{name}")
+    @ApiOperation(value = "Get a list of flag list records matching an organization name", response = FlaglistListModel.class)
+    public ResponseEntity<Resource<FlaglistListModel>> getFlaglistByName(HttpServletRequest request,
+                @RequestParam( value="offset") Optional<Integer> offsetValue,
+                @RequestParam( value="limit") Optional<Integer> limitValue,
+                @ApiParam(name="cname", value="Common Name to search for", required = true) @PathVariable(value="name") String name) {
+        setOffsetLimit(offsetValue,limitValue);
+        if(name != null && name.length() > 2) {
+            FlaglistListModel entries = flaglistService.findByOrganizationName(name, this.offset, this.limit);
+            if(entries != null && entries.getCount() > 0) {
+                Resource<FlaglistListModel> resource = new Resource<>(entries, generateLinks(request, this.offset, this.limit, entries.getCount()));
+                return ResponseEntity.ok(resource);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     
     @GetMapping("/ca/{ca}")
