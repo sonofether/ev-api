@@ -24,7 +24,9 @@ import com.godaddy.evapi.model.FlaglistInputModel;
 import com.godaddy.evapi.model.FlaglistListModel;
 import com.godaddy.evapi.model.FlaglistModel;
 import com.godaddy.evapi.model.IdModel;
+import com.godaddy.evapi.model.LogModel;
 import com.godaddy.evapi.service.IFlaglistService;
+import com.godaddy.evapi.service.ILoggingService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -37,10 +39,16 @@ public class FlaglistController extends BaseController {
     @Autowired
     IFlaglistService flaglistService;
     
+    @Autowired
+    ILoggingService loggingService;
+    
+    @Autowired
+    HttpServletRequest request;
+    
     // Get all records, paginated
     @GetMapping("")
     @ApiOperation(value = "Gets all flag list records", response = FlaglistListModel.class)
-    public ResponseEntity<Resource<FlaglistListModel>> getAll(HttpServletRequest request,
+    public ResponseEntity<Resource<FlaglistListModel>> getAll(
                 @RequestParam( value="offset") Optional<Integer> offsetValue,
                 @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
@@ -49,9 +57,12 @@ public class FlaglistController extends BaseController {
         // Return found entries
         if(entries.getCount() > 0) {
             Resource<FlaglistListModel> resource = new Resource<>(entries, generateLinks(request, this.offset, this.limit, entries.getCount()));
+            loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist", "", getCAName(), "OK", this.offset, entries.getCount(), this.limit, 200) );
             return ResponseEntity.ok(resource);
         }
-        
+
+        //public LogModel(String ip, String operation, String endpoint, String args, String ca, String result, int offset, int count, int limit, int code)
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist", "", getCAName(), "NOT_FOUND", this.offset, 0, this.limit, 404) );
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     
@@ -128,7 +139,7 @@ public class FlaglistController extends BaseController {
        
     @GetMapping("/commonName/{cname}")
     @ApiOperation(value = "Get a list of flag list records matching a cName", response = FlaglistListModel.class)
-    public ResponseEntity<Resource<FlaglistListModel>> getFlaglistByCName(HttpServletRequest request,
+    public ResponseEntity<Resource<FlaglistListModel>> getFlaglistByCName(
                 @RequestParam( value="offset") Optional<Integer> offsetValue,
                 @RequestParam( value="limit") Optional<Integer> limitValue,
                 @ApiParam(name="cname", value="Common Name to search for", required = true) @PathVariable(value="cname") String cName) {
@@ -146,7 +157,7 @@ public class FlaglistController extends BaseController {
 
     @GetMapping("/name/{name}")
     @ApiOperation(value = "Get a list of flag list records matching an organization name", response = FlaglistListModel.class)
-    public ResponseEntity<Resource<FlaglistListModel>> getFlaglistByName(HttpServletRequest request,
+    public ResponseEntity<Resource<FlaglistListModel>> getFlaglistByName(
                 @RequestParam( value="offset") Optional<Integer> offsetValue,
                 @RequestParam( value="limit") Optional<Integer> limitValue,
                 @ApiParam(name="cname", value="Common Name to search for", required = true) @PathVariable(value="name") String name) {
@@ -163,7 +174,7 @@ public class FlaglistController extends BaseController {
     
     @GetMapping("/ca/{ca}")
     @ApiOperation(value = "Get a list of flag list records inserted a CA", response = FlaglistListModel.class)
-    public ResponseEntity<Resource<FlaglistListModel>> getFlaglistByCA(HttpServletRequest request,
+    public ResponseEntity<Resource<FlaglistListModel>> getFlaglistByCA(
                 @RequestParam( value="offset") Optional<Integer> offsetValue,
                 @RequestParam( value="limit") Optional<Integer> limitValue,
                 @ApiParam(name="ca", value="The CA to search for", required = true) @PathVariable(value="ca") String ca) {
@@ -177,7 +188,24 @@ public class FlaglistController extends BaseController {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    
+
+    @GetMapping("/source/{source}")
+    @ApiOperation(value = "Get a list of flag list records matching a source", response = FlaglistListModel.class)
+    public ResponseEntity<Resource<FlaglistListModel>> getFlaglistBySource(
+                @RequestParam( value="offset") Optional<Integer> offsetValue,
+                @RequestParam( value="limit") Optional<Integer> limitValue,
+                @ApiParam(name="source", value="Source to search for", required = true) @PathVariable(value="source") String source) {
+        setOffsetLimit(offsetValue,limitValue);
+        if(source != null && source.length() > 1) {
+            FlaglistListModel entries = flaglistService.findBySource(source, this.offset, this.limit);
+            if(entries != null && entries.getCount() > 0) {
+                Resource<FlaglistListModel> resource = new Resource<>(entries, generateLinks(request, this.offset, this.limit, entries.getCount()));
+                return ResponseEntity.ok(resource);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
     // Private Helper functions
     
     // Just make sure they put something for each field and we are not duplicating an entry

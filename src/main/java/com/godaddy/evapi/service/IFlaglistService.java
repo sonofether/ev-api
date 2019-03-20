@@ -16,4 +16,5 @@ public interface IFlaglistService {
     FlaglistListModel findByOrganizationName(String organizationName, int offset, int limit);
     FlaglistListModel findByCommonName(String commonName, int offset, int limit);
     FlaglistListModel findByCA(String ca, int offset, int limit);
+    FlaglistListModel findBySource(String source, int offset, int limit);
 }

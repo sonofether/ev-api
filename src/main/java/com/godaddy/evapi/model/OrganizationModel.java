@@ -12,19 +12,23 @@ public class OrganizationModel extends BaseModel {
     private String countryName;
     private String countryCode;
     private String ca;
+    private String phoneNumber;
+    private String address;
     
     public OrganizationModel() {
         // Default constructor - do nothing
     }
         
-    public OrganizationModel(UUID id, String orgName, String cName, String serialNum, String locality, String state, String country, String ca) {
+    public OrganizationModel(UUID id, String orgName, String cName, String serialNum, String locality, String state, String country, String ca,
+                String phoneNumber, String address) {
         this.id = id;
-        this.setValues(orgName, cName, serialNum, locality, state, country, ca);
+        this.setValues(orgName, cName, serialNum, locality, state, country, ca, phoneNumber, address);
     }
     
-    public OrganizationModel( String orgName, String cName, String serialNum, String locality, String state, String country, String ca) {
+    public OrganizationModel( String orgName, String cName, String serialNum, String locality, String state, String country, String ca,
+                String phoneNumber, String address) {
         this.id = UUID.randomUUID();
-        this.setValues(orgName, cName, serialNum, locality, state, country, ca);
+        this.setValues(orgName, cName, serialNum, locality, state, country, ca, phoneNumber, address);
     }
     
     public UUID getId() {
@@ -95,13 +99,29 @@ public class OrganizationModel extends BaseModel {
         return countryCode;
     }
 
-    
     public void setCountryCode(String countryCode) {
         this.countryCode = countryCode;
     }
+    
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+    
+    public String getAddress() {
+        return address;
+    }
+    
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
     // PRIVATE calls
-    private void setValues(String orgName, String cName, String serialNum, String locality, String state, String country, String ca) {
+    private void setValues(String orgName, String cName, String serialNum, String locality, String state, String country, String ca,
+                String phoneNumber, String address) {
         this.organizationName = orgName;
         this.commonName = cName;
         this.serialNumber = serialNum;
@@ -109,6 +129,8 @@ public class OrganizationModel extends BaseModel {
         this.stateOrProvinceName = state;
         this.countryName = country;
         this.ca = ca;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
     }
     
 }

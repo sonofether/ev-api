@@ -85,7 +85,8 @@ public class OrganizationController extends BaseController {
         if(validateNewRecord(organization.getOrganizationName(), organization.getCommonName())) {
             // Setup the model to be stored                   
             OrganizationModel org = new OrganizationModel(id, organization.getOrganizationName(), organization.getCommonName(), organization.getSerialNumber(),
-                        organization.getLocalityName(), organization.getStateOrProvinceName(), organization.getCountryName(), ca);
+                        organization.getLocalityName(), organization.getStateOrProvinceName(), organization.getCountryName(), ca, organization.getPhoneNumber(),
+                        organization.getAddress());
             if(organizationService.save(org)) {
                 // Create certificate record
                 CertificateModel cert = new CertificateModel(org.getId(), org.getId(), organization.getOrganizationName(), ca, organization.getCommonName(), 
@@ -326,7 +327,9 @@ public class OrganizationController extends BaseController {
         return isValid;
     }
     
-    private boolean validateorganizationName(String orgName) {
+    // TODO: We want to validate the organization entity type in some fashion. 
+    // Some classes have been created in legal entity to this end, but it will depend on the country supplied
+    private boolean validateOrganizationName(String orgName) {
         boolean isValid = false;
         
         return isValid;

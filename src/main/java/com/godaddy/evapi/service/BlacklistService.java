@@ -35,9 +35,6 @@ import com.godaddy.evapi.model.BlacklistModel;
 @Service
 public class BlacklistService extends BaseAWSService implements IBlacklistService {
     @Autowired
-    TransportClient transportClient;
-    
-    @Autowired
     RestHighLevelClient restClient;
     
     static final String INDEX = "blacklist";

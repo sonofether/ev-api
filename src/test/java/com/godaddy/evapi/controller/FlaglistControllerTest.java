@@ -9,6 +9,8 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -28,6 +30,7 @@ import com.godaddy.evapi.model.FlaglistListModel;
 import com.godaddy.evapi.model.FlaglistModel;
 import com.godaddy.evapi.model.IdModel;
 import com.godaddy.evapi.service.IFlaglistService;
+import com.godaddy.evapi.service.ILoggingService;
 import com.godaddy.evapi.service.TestFlaglistService;
 
 import io.jsonwebtoken.Claims;
@@ -36,12 +39,23 @@ public class FlaglistControllerTest {
     @Mock
     IFlaglistService flaglistService;
     
+    @Mock
+    ILoggingService loggingService;
+    
+    @Mock
+    HttpServletRequest request;
+    
     @InjectMocks
     private FlaglistController flController;
     
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
+        when(request.getRemoteAddr()).thenReturn("127.0.0.1");
+        when(request.getServerName()).thenReturn("www.example.com");
+        when(request.getRequestURI()).thenReturn("/");
+        when(request.getRequestURL()).thenReturn(new StringBuffer("http://example.com/"));
+        when(request.getQueryString()).thenReturn("");
     }
     
     @Test
@@ -56,14 +70,11 @@ public class FlaglistControllerTest {
     
     @Test
     public void blacklistControllerGetAll() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRemoteAddr("1.2.3.4");
-        request.setServerName("www.example.com");
-        request.setRequestURI("/");
-        request.setQueryString("");
+
         Optional<Integer> optInt = Optional.empty();
+        when(loggingService.insertLog(any())).thenReturn(true);
         when(flaglistService.findAll(anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
-        ResponseEntity<Resource<FlaglistListModel>> response = flController.getAll(request, optInt, optInt);
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getAll(optInt, optInt);
         assert(response.getStatusCode() == HttpStatus.OK);
         FlaglistListModel flList = response.getBody().getContent();
         assertNotNull(flList);
@@ -79,7 +90,7 @@ public class FlaglistControllerTest {
         request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(flaglistService.findByCA(anyString(), anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
-        ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByCA(request, optInt, optInt, "My CA");
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByCA(optInt, optInt, "My CA");
         assert(response.getStatusCode() == HttpStatus.OK);
         FlaglistListModel flList = response.getBody().getContent();
         assertNotNull(flList);
@@ -96,7 +107,40 @@ public class FlaglistControllerTest {
         request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(flaglistService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
-        ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByCName(request, optInt, optInt, "example.com");
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByCName(optInt, optInt, "example.com");
+        assert(response.getStatusCode() == HttpStatus.OK);
+        FlaglistListModel flList = response.getBody().getContent();
+        assertNotNull(flList);
+        assert(flList.getFlaglistEntries().get(0).getCommonName().equals("example.com"));
+
+    }
+    
+    @Test
+    public void blacklistControllerGetByOrgName() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("1.2.3.4");
+        request.setServerName("www.example.com");
+        request.setRequestURI("/");
+        request.setQueryString("");
+        Optional<Integer> optInt = Optional.empty();
+        when(flaglistService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByName(optInt, optInt, "organizagtion name");
+        assert(response.getStatusCode() == HttpStatus.OK);
+        FlaglistListModel flList = response.getBody().getContent();
+        assertNotNull(flList);
+        assert(flList.getFlaglistEntries().get(0).getCommonName().equals("example.com"));
+    }
+    
+    @Test
+    public void blacklistControllerGetBySource() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("1.2.3.4");
+        request.setServerName("www.example.com");
+        request.setRequestURI("/");
+        request.setQueryString("");
+        Optional<Integer> optInt = Optional.empty();
+        when(flaglistService.findBySource(anyString(), anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistBySource(optInt, optInt, "example.com");
         assert(response.getStatusCode() == HttpStatus.OK);
         FlaglistListModel flList = response.getBody().getContent();
         assertNotNull(flList);

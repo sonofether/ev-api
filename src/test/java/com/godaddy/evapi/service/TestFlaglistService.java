@@ -68,4 +68,9 @@ public class TestFlaglistService implements IFlaglistService {
     public FlaglistListModel findByCA(String ca, int offset, int limit) {
         return generateFlaglistList();
     }
+
+    @Override
+    public FlaglistListModel findBySource(String source, int offset, int limit) {
+        return generateFlaglistList();
+    }
 }

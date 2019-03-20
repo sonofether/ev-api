@@ -21,4 +21,5 @@ public interface IOrganizationService {
     OrganizationListModel findBySerialNumber(String serialNumber, int offset, int limit);
     OrganizationListModel findByNameSerialNumberCountry(String name, String serialNumber, String country, int offset, int limit);
     OrganizationListModel findByNameSerialNumberCountryState(String name, String serialNumber, String country, String state, int offset, int limit);
+    OrganizationListModel findByPhoneNumber(String phoneNumber, int offset, int limit);
 }

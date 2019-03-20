@@ -42,9 +42,6 @@ import com.godaddy.evapi.model.OrganizationModel;
 public class OrganizationServiceTest {
     
     @Mock
-    TransportClient transportClient;
-    
-    @Mock
     RestHighLevelClient restClient;
     
     @Mock

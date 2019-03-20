@@ -1,13 +1,14 @@
 package com.godaddy.evapi.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequestInterceptor;
+
 import org.elasticsearch.action.DocWriteResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -15,27 +16,19 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.amazonaws.http.AWSRequestSigningApacheInterceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godaddy.evapi.model.CertificateListModel;
 import com.godaddy.evapi.model.CertificateModel;
-import com.godaddy.evapi.model.OrganizationListModel;
-import com.godaddy.evapi.model.OrganizationModel;
 
 @Service
 public class CertificateService extends BaseAWSService implements ICertificateService {
 
-    @Autowired
-    TransportClient transportClient;
-    
     @Autowired
     RestHighLevelClient restClient;
     
@@ -51,20 +44,33 @@ public class CertificateService extends BaseAWSService implements ICertificateSe
         Map data = objectMapper.convertValue(certificate, Map.class);
         data.remove("id");
         IndexRequest request = new IndexRequest(INDEX, TYPE, certificate.getId().toString()).source(data);
-        IndexResponse response = transportClient.index(request).actionGet();
-        if(response.getResult() == DocWriteResponse.Result.CREATED || 
-           response.getResult() == DocWriteResponse.Result.UPDATED) {
-            result = true;
+        IndexResponse response;
+        try {
+            response = restClient.index(request);
+            if(response.getResult() == DocWriteResponse.Result.CREATED || 
+               response.getResult() == DocWriteResponse.Result.UPDATED) {
+                result = true;
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
         return result;
     }
 
     @Override
     public boolean delete(String id) {
-        DeleteResponse response = transportClient.prepareDelete(INDEX, TYPE, id).get();
-        if(response != null && response.getResult() == DocWriteResponse.Result.DELETED) {
-            // Hey, it worked!
-            return true;
+        DeleteRequest deleteRequest = new DeleteRequest(INDEX, TYPE, id);
+        DeleteResponse response;
+        try {
+            response = restClient.delete(deleteRequest);
+            if(response != null && response.getResult() == DocWriteResponse.Result.DELETED) {
+                // Hey, it worked!
+                return true;
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
         return false;
     }
@@ -72,19 +78,23 @@ public class CertificateService extends BaseAWSService implements ICertificateSe
     @Override
     public CertificateModel findById(String id) {
         CertificateModel certificate = null;
-        
-        GetRequest request = new GetRequest(INDEX, TYPE, id);
-        GetResponse response = transportClient.get(request).actionGet();
-        if(response.isExists()) {
-            String data = response.getSourceAsString();
-            ObjectMapper objectMapper = new ObjectMapper();
-            try {
-                certificate = objectMapper.readValue(data, CertificateModel.class);
-                // id is stored as _id, so we need to grab it
-                certificate.setId(UUID.fromString(response.getId()));
-            } catch (Exception ex) {
-                ex.printStackTrace();
+
+        try {
+            GetRequest request = new GetRequest(INDEX, TYPE, id);
+            GetResponse response = restClient.get(request);
+            if(response.isExists()) {
+                String data = response.getSourceAsString();
+                ObjectMapper objectMapper = new ObjectMapper();
+                try {
+                    certificate = objectMapper.readValue(data, CertificateModel.class);
+                    // id is stored as _id, so we need to grab it
+                    certificate.setId(UUID.fromString(response.getId()));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         return certificate;
@@ -95,9 +105,6 @@ public class CertificateService extends BaseAWSService implements ICertificateSe
         try {
             SearchRequest request = generateSearchRequest(QueryBuilders.matchAllQuery(), offset, limit, INDEX, TYPE);
             SearchResponse response = restClient.search(request);
-/*
-            SearchResponse response = transportClient.prepareSearch(INDEX).setTypes(TYPE).setFrom(offset).setSize(limit).get();
-*/
             return findRecords(response, offset, limit);
         } catch (Exception ex) {
             

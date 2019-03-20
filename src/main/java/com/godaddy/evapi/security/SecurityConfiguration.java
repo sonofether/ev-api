@@ -2,6 +2,7 @@ package com.godaddy.evapi.security;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -22,6 +23,9 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 // extends WebSecurityConfigurerAdapter
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+    @Value("${security.require-ssl}")
+    private boolean requireSsl;
+    
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
@@ -31,7 +35,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
   
         httpSecurity.addFilterBefore(new AuthenticationFilter(authenticationManager()),BasicAuthenticationFilter.class);
         
-        httpSecurity.requiresChannel().anyRequest().requiresSecure();
+        if(requireSsl) {
+            httpSecurity.requiresChannel().anyRequest().requiresSecure();
+        }
     }
     
     @Override

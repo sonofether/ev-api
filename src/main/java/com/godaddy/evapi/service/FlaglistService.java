@@ -28,9 +28,6 @@ import com.godaddy.evapi.model.FlaglistModel;
 @Service
 public class FlaglistService  extends BaseAWSService implements IFlaglistService {
     @Autowired
-    TransportClient transportClient;
-    
-    @Autowired
     RestHighLevelClient restClient;
     
     static final String INDEX = "flaglist";
@@ -144,6 +141,18 @@ public class FlaglistService  extends BaseAWSService implements IFlaglistService
             return null;
         }
     }
+    
+    @Override
+    public FlaglistListModel findBySource(String source, int offset, int limit) {
+        try {
+            SearchRequest request = generateSearchRequest(QueryBuilders.matchQuery("source", source), offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
  
     // PRIVATE FUNCTION CALLS / HELPERS
     

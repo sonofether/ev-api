@@ -88,4 +88,9 @@ public class TestOrganizationService implements IOrganizationService {
         
         return orgModel;
     }
+
+    @Override
+    public OrganizationListModel findByPhoneNumber(String phoneNumber, int offset, int limit) {
+        return generateOrganizationList();
+    }
 }

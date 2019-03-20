@@ -15,7 +15,6 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +26,6 @@ import com.godaddy.evapi.model.OrganizationModel;
 
 @Service
 public class OrganizationService extends BaseAWSService implements IOrganizationService {
-
-    @Autowired
-    TransportClient transportClient;
-    
     @Autowired
     RestHighLevelClient restClient;
         
@@ -176,6 +171,19 @@ public class OrganizationService extends BaseAWSService implements IOrganization
                         .must(QueryBuilders.matchQuery("countryName", country))
                         .must(QueryBuilders.matchQuery("stateOrProvinceName", state)),
                         offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    @Override
+    public OrganizationListModel findByPhoneNumber(String phoneNumber, int offset, int limit) {
+        try {
+            SearchRequest request = generateSearchRequest(QueryBuilders.matchQuery("phoneNumber", phoneNumber), offset, limit, INDEX, TYPE);
             SearchResponse response = restClient.search(request);
             return findRecords(response, offset, limit);
         } catch (Exception ex) {

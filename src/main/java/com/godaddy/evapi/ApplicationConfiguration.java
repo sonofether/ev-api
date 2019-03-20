@@ -50,13 +50,6 @@ public class ApplicationConfiguration {
         return new RestHighLevelClient(RestClient.builder(HttpHost.create(getEndpoint())).setHttpClientConfigCallback(hacb -> hacb.addInterceptorLast(interceptor)));
     }
     
-    @SuppressWarnings("resource")
-    @Bean(destroyMethod="close")
-    public TransportClient transportClient() throws Exception {
-        Settings settings = Settings.builder().put("cluster.name", clusterName).build();
-        return new PreBuiltTransportClient(settings).addTransportAddress(new TransportAddress(InetAddress.getByName(host), port));
-    }
-    
     private String getEndpoint() {
         return endpoint;
     }
