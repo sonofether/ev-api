@@ -81,15 +81,18 @@ public class FlaglistController extends BaseController {
         }
         
         if(success) {
+            loggingService.insertLog( new LogModel(request.getRemoteHost(), "DELETE", "/flaglist/" + id, "", getCAName(), "OK", 0, 1, 0, 200) );
             return new ResponseEntity<>(HttpStatus.OK);
         }
         
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "DELETE", "/flaglist/" + id, "", getCAName(), "BAD_REQUEST", 0, 1, 0, 400) );
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     
     @PutMapping("/{id}")
     @ApiOperation(value = "Updates a flag list record by id, currently not implemented", response = HttpStatus.class)
     public ResponseEntity<HttpStatus> updateFlaglist(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value = "id") String id) {
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "PUT", "/flaglist/" + id, "", getCAName(), "NOT_IMPLEMENTED", 0, 1, 0, 501) );
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
         
@@ -107,6 +110,7 @@ public class FlaglistController extends BaseController {
                         flEntry.getSerialNumber(), flEntry.getReason(), ca, "ca", 1);
             if(flaglistService.save(flModel)) {
                 // Return created record id
+                loggingService.insertLog( new LogModel(request.getRemoteHost(), "POST", "/flaglist/", id.toString(), getCAName(), "CREATED", 0, 1, 0, 201) );
                 return new ResponseEntity<IdModel>(new IdModel(id.toString()), HttpStatus.CREATED);
             }
         }
@@ -118,12 +122,15 @@ public class FlaglistController extends BaseController {
                 for(FlaglistModel entry : entries.getFlaglistEntries()) {
                     entry.setLastUpdated(new Date());
                     flaglistService.save(entry);
+                    loggingService.insertLog( new LogModel(request.getRemoteHost(), "POST", "/flaglist/", id.toString(), getCAName(), "OK", 0, 1, 0, 200) );
                     return new ResponseEntity<IdModel>(new IdModel(id.toString()), HttpStatus.OK);
                 }
             }
         }
         
         // Something is wrong.
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "POST", "/flaglist", flEntry.getOrganizationName() + " " + flEntry.getCommonName(), getCAName(),
+                    "BAD_REQUEST", 0, 1, 0, 400) );
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     
@@ -132,8 +139,10 @@ public class FlaglistController extends BaseController {
     public ResponseEntity<FlaglistModel> getById(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value="id") String id) {
         FlaglistModel result = flaglistService.findById(id);
         if(result == null) {
+            loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist/" + id, "", getCAName(), "NOT_FOUND", 0, 0, 0, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist/" + id, "", getCAName(), "OK", 0, 1, 0, 404) );
         return new ResponseEntity<FlaglistModel>(result, HttpStatus.OK);
     }
        
@@ -148,9 +157,12 @@ public class FlaglistController extends BaseController {
             FlaglistListModel entries = flaglistService.findByCommonName(cName, this.offset, this.limit);
             if(entries != null && entries.getCount() > 0) {
                 Resource<FlaglistListModel> resource = new Resource<>(entries, generateLinks(request, this.offset, this.limit, entries.getCount()));
+                loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist/commonName/" + cName, "", getCAName(), "OK", this.offset, entries.getCount(), this.limit, 200) );
                 return ResponseEntity.ok(resource);
             }
         }
+        
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist/commonName/" + cName, "", getCAName(), "OK", this.offset, 0, this.limit, 404) );
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     
     }
@@ -166,9 +178,12 @@ public class FlaglistController extends BaseController {
             FlaglistListModel entries = flaglistService.findByOrganizationName(name, this.offset, this.limit);
             if(entries != null && entries.getCount() > 0) {
                 Resource<FlaglistListModel> resource = new Resource<>(entries, generateLinks(request, this.offset, this.limit, entries.getCount()));
+                loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist/name/" + name, "", getCAName(), "OK", this.offset, entries.getCount(), this.limit, 200) );
                 return ResponseEntity.ok(resource);
             }
         }
+        
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist/name/" + name, "", getCAName(), "OK", this.offset, 0, this.limit, 404) );
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     
@@ -183,9 +198,12 @@ public class FlaglistController extends BaseController {
             FlaglistListModel entries = flaglistService.findByCA(ca, this.offset, this.limit);
             if(entries != null && entries.getCount() > 0) {
                 Resource<FlaglistListModel> resource = new Resource<>(entries, generateLinks(request, this.offset, this.limit, entries.getCount()));
+                loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist/ca/" + ca, "", getCAName(), "OK", this.offset, entries.getCount(), this.limit, 200) );
                 return ResponseEntity.ok(resource);
             }
         }
+        
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist/ca/" + ca, "", getCAName(), "OK", this.offset, 0, this.limit, 404) );
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
@@ -200,9 +218,12 @@ public class FlaglistController extends BaseController {
             FlaglistListModel entries = flaglistService.findBySource(source, this.offset, this.limit);
             if(entries != null && entries.getCount() > 0) {
                 Resource<FlaglistListModel> resource = new Resource<>(entries, generateLinks(request, this.offset, this.limit, entries.getCount()));
+                loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist/source/" + source, "", getCAName(), "OK", this.offset, entries.getCount(), this.limit, 200) );
                 return ResponseEntity.ok(resource);
             }
         }
+        
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist/source/" + source, "", getCAName(), "OK", this.offset, 0, this.limit, 404) );
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 

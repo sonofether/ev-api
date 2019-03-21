@@ -32,7 +32,7 @@ public class LoggingService implements ILoggingService {
     @Override
     public boolean insertLog(LogModel logEntry) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        String index = INDEX + format.format( new Date() );;
+        String index = INDEX + format.format( new Date() );
         boolean result = false;
         
         try {
