@@ -33,10 +33,12 @@ import com.godaddy.evapi.model.BlacklistListModel;
 import com.godaddy.evapi.model.CertificateModel;
 import com.godaddy.evapi.model.CollisionModel;
 import com.godaddy.evapi.model.IdModel;
+import com.godaddy.evapi.model.LogModel;
 import com.godaddy.evapi.model.OrganizationInputModel;
 import com.godaddy.evapi.model.OrganizationListModel;
 import com.godaddy.evapi.model.OrganizationModel;
 import com.godaddy.evapi.service.ICertificateService;
+import com.godaddy.evapi.service.ILoggingService;
 import com.godaddy.evapi.service.IOrganizationService;
 
 import io.jsonwebtoken.Claims;
@@ -52,6 +54,12 @@ public class OrganizationController extends BaseController {
     @Autowired
     IOrganizationService organizationService;
     
+    @Autowired
+    ILoggingService loggingService;
+    
+    @Autowired
+    HttpServletRequest request;
+    
     //@Autowired
     //ICertificateService certificateService;
         
@@ -60,23 +68,24 @@ public class OrganizationController extends BaseController {
     
     @GetMapping(value="")
     @ApiOperation(value = "Gets all organization records, paginated", response = OrganizationListModel.class)
-    public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationList(HttpServletRequest request,
+    public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationList(
                 @RequestParam( value="offset") Optional<Integer> offsetValue,
                 @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findAll(this.offset, this.limit);
         if(orgList.getCount() < 1) {
+            loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/", "", getCAName(), "NOT_FOUND", this.offset, 0, this.limit, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }        
         
         Resource<OrganizationListModel> resource = new Resource<>(orgList, generateLinks(request, this.offset, this.limit, orgList.getCount()));
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/", "", getCAName(), "OK", this.offset, orgList.getCount(), this.limit, 200) );
         return ResponseEntity.ok(resource);
     }
     
     @PostMapping(value="")
     @ApiOperation(value = "Create a new organization record", response = IdModel.class)
     public ResponseEntity<IdModel> AddOrganization(@ApiParam(name="organization", value="Organization data to add", required = true) @RequestBody OrganizationInputModel organization) {
-        boolean success = false;
         String ca = getCAName();
         
         // Create our new id
@@ -95,11 +104,12 @@ public class OrganizationController extends BaseController {
                 
                 // TODO: Write to the block chain
                 
-                success = true;
+                loggingService.insertLog( new LogModel(request.getRemoteHost(), "POST", "/org/", id.toString(), ca, "CREATED", 0, 1, 0, 201) );
                 return new ResponseEntity<IdModel>(new IdModel(id.toString()), HttpStatus.CREATED);
             }
         }
         
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "POST", "/org/", id.toString(), getCAName(), "BAD_REQUEST", 0, 0, 0, 400) );
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     
@@ -109,9 +119,11 @@ public class OrganizationController extends BaseController {
     public ResponseEntity<OrganizationModel> GetOrganization(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value = "id") String orgId) {
         OrganizationModel org = organizationService.findById(orgId);        
         if(org == null) {
+            loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/" + orgId, "", getCAName(), "NOT_FOUND", 0, 0, 0, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/" + orgId, "", getCAName(), "Ok", 0, 1, 0, 200) );
         return new ResponseEntity<OrganizationModel>(org, HttpStatus.OK);
     }
 
@@ -119,6 +131,7 @@ public class OrganizationController extends BaseController {
     @DeleteMapping(value="/{id}")
     @ApiOperation(value = "Delete an organization record by id, currently not implemented", response = HttpStatus.class)
     public ResponseEntity<HttpStatus> DeleteOrganization(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value = "id") String orgId) {
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "DELETE", "/org/" + orgId, "", getCAName(), "NOT_IMPLEMENTED", 0, 1, 0, 501) );
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
         
@@ -126,17 +139,19 @@ public class OrganizationController extends BaseController {
     @PutMapping(value="/{id}")
     @ApiOperation(value = "Udate an organization record by id, currently not implemented", response = HttpStatus.class)
     public ResponseEntity<HttpStatus> UpdateOrganization(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value = "id") String orgId) {
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "PUT", "/org/" + orgId, "", getCAName(), "NOT_IMPLEMENTED", 0, 1, 0, 501) );
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @GetMapping(value="/name/{name}")
     @ApiOperation(value = "Get all organization records matching an organization name", response = OrganizationListModel.class)
-    public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByName(HttpServletRequest request, 
+    public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByName(
                 @ApiParam(name="name", value="Organization Name to search", required = true) @PathVariable(value="name") String name, 
                 @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByOrganizationName(name, this.offset, this.limit);
         if(orgList.getCount() < 1) {
+            loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/name/" + name, "", getCAName(), "NOT_FOUND", 0, 0, 0, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         
@@ -144,14 +159,15 @@ public class OrganizationController extends BaseController {
         return ResponseEntity.ok(resource);
     }
     
-    @GetMapping(value="/commonname/{cname}")
+    @GetMapping(value="/commonName/{cname}")
     @ApiOperation(value = "Get all organization records matching a cName", response = OrganizationListModel.class)
-    public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByCommonName(HttpServletRequest request, 
+    public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByCommonName(
                 @ApiParam(name="cname", value="cName to search", required = true) @PathVariable(value="cname") String name, 
                 @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByCommonName(name, this.offset, this.limit);
         if(orgList.getCount() < 1) {
+            loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/commonname/" + name, "", getCAName(), "NOT_FOUND", 0, 0, 0, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         
@@ -161,12 +177,13 @@ public class OrganizationController extends BaseController {
     
     @GetMapping(value="/serial/{serialNumber}")
     @ApiOperation(value = "Get all organization records matching a serial number", response = OrganizationListModel.class)
-    public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationBySerialNumber(HttpServletRequest request, 
+    public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationBySerialNumber(
                 @ApiParam(name="serialNumber", value="Serial Number to search", required = true) @PathVariable(value="serialNumber") String serialNumber, 
                 @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findBySerialNumber(serialNumber, this.offset, this.limit);
         if(orgList.getCount() < 1) {
+            loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/serial" + serialNumber, "", getCAName(), "NOT_FOUND", 0, 0, 0, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         
@@ -176,7 +193,7 @@ public class OrganizationController extends BaseController {
 
     @GetMapping(value="/{name}/{serialNumber}/{country}")
     @ApiOperation(value = "Get all organization records matching an organization name, serial number, and country", response = OrganizationListModel.class)
-    public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByNameSerialNumberCountry(HttpServletRequest request, 
+    public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByNameSerialNumberCountry(
                 @ApiParam(name="name", value="Organization Name to search", required = true) @PathVariable(value="name") String name, 
                 @ApiParam(name="serialNumber", value="Serial Number to search", required = true) @PathVariable(value="serialNumber") String serialNumber,
                 @ApiParam(name="country", value="Country to search", required = true) @PathVariable(value="country") String country, 
@@ -184,6 +201,7 @@ public class OrganizationController extends BaseController {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByNameSerialNumberCountry(name, serialNumber, country,this.offset, this.limit);
         if(orgList.getCount() < 1) {
+            loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/" + name + "/" + serialNumber + "/" + country, "", getCAName(), "NOT_FOUND", 0, 0, 0, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
@@ -193,7 +211,7 @@ public class OrganizationController extends BaseController {
     
     @GetMapping(value="/{name}/{serialNumber}/{country}/{state}")
     @ApiOperation(value = "Get all organization records matching an organization name, serial number, country, and state", response = OrganizationListModel.class)
-    public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByNameSerialNumberCountryState(HttpServletRequest request, 
+    public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationByNameSerialNumberCountryState(
                 @ApiParam(name="name", value="Organization Name to search", required = true) @PathVariable(value="name") String name, 
                 @ApiParam(name="serialNumber", value="Serial Number to search", required = true) @PathVariable(value="serialNumber") String serialNumber,
                 @ApiParam(name="country", value="Country to search", required = true) @PathVariable(value="country") String country,
@@ -202,6 +220,7 @@ public class OrganizationController extends BaseController {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByNameSerialNumberCountryState(name, serialNumber, country, state, this.offset, this.limit);
         if(orgList.getCount() < 1) {
+            loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/" + name + "/" + serialNumber + "/" + country + "/" + state, "", getCAName(), "NOT_FOUND", 0, 0, 0, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         
@@ -219,6 +238,8 @@ public class OrganizationController extends BaseController {
             collision.setCollision(true);
         }
         
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/collisionDetect/" + name, "", getCAName(), "OK", 0, collision.isCollision() ? 1 : 0, 0, 200) );
+        
         return collision;
     }
     
@@ -230,6 +251,8 @@ public class OrganizationController extends BaseController {
         if(orgList.getCount() > 0) {
             collision.setCollision(true);
         }
+        
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/collisionDetect/commonName/" + commonName, "", getCAName(), "OK", 0, collision.isCollision() ? 1 : 0, 0, 200) );
         
         return collision;
     }
@@ -244,6 +267,7 @@ public class OrganizationController extends BaseController {
             collision.setCollision(true);
         }
         
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/collisionDetect/serial/" + serialNumber, "", getCAName(), "OK", 0, collision.isCollision() ? 1 : 0, 0, 200) );
         return collision;        
     }
     
@@ -259,6 +283,7 @@ public class OrganizationController extends BaseController {
             collision.setCollision(true);
         }
         
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/collisionDetect/" + name + "/" + serialNumber + "/" + country, "", getCAName(), "OK", 0, collision.isCollision() ? 1 : 0, 0, 200) );
         return collision;        
     }
     
@@ -274,6 +299,7 @@ public class OrganizationController extends BaseController {
             collision.setCollision(true);
         }
         
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/collisionDetect/" + name + "/" + serialNumber + "/" + country + "/" + state, "", getCAName(), "OK", 0, collision.isCollision() ? 1 : 0, 0, 200) );
         return collision;        
     }
         

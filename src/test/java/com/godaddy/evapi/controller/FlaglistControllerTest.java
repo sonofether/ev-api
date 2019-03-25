@@ -56,6 +56,7 @@ public class FlaglistControllerTest {
         when(request.getRequestURI()).thenReturn("/");
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://example.com/"));
         when(request.getQueryString()).thenReturn("");
+        when(loggingService.insertLog(any())).thenReturn(true);
     }
     
     @Test

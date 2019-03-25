@@ -9,6 +9,8 @@ import static org.mockito.Mockito.when;
 import java.util.Date;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -27,6 +29,7 @@ import com.godaddy.evapi.model.CollisionModel;
 import com.godaddy.evapi.model.OrganizationInputModel;
 import com.godaddy.evapi.model.OrganizationListModel;
 import com.godaddy.evapi.model.OrganizationModel;
+import com.godaddy.evapi.service.ILoggingService;
 import com.godaddy.evapi.service.IOrganizationService;
 import com.godaddy.evapi.service.TestOrganizationService;
 
@@ -36,12 +39,24 @@ public class OrganizationControllerTest {
     @Mock
     IOrganizationService organizationService;
     
+    @Mock
+    ILoggingService loggingService;
+    
+    @Mock
+    HttpServletRequest request;
+    
     @InjectMocks
     private OrganizationController orgController;
     
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
+        when(request.getRemoteAddr()).thenReturn("127.0.0.1");
+        when(request.getServerName()).thenReturn("www.example.com");
+        when(request.getRequestURI()).thenReturn("/");
+        when(request.getRequestURL()).thenReturn(new StringBuffer("http://example.com/"));
+        when(request.getQueryString()).thenReturn("");
+        when(loggingService.insertLog(any())).thenReturn(true);
     }
     
     @Test
@@ -63,7 +78,7 @@ public class OrganizationControllerTest {
         request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findAll(anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
-        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationList(request, optInt, optInt);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationList(optInt, optInt);
         assert(response.getStatusCode() == HttpStatus.OK);
         OrganizationListModel orgList = response.getBody().getContent();
         assertNotNull(orgList);
@@ -79,7 +94,7 @@ public class OrganizationControllerTest {
         request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findBySerialNumber(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
-        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationBySerialNumber(request, "1234", optInt, optInt);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationBySerialNumber("1234", optInt, optInt);
         assert(response.getStatusCode() == HttpStatus.OK);
         OrganizationListModel orgList = response.getBody().getContent();
         assertNotNull(orgList);
@@ -94,7 +109,7 @@ public class OrganizationControllerTest {
         request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
-        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByCommonName(request, "example.com", optInt, optInt);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByCommonName("example.com", optInt, optInt);
         assert(response.getStatusCode() == HttpStatus.OK);
         OrganizationListModel orgList = response.getBody().getContent();
         assertNotNull(orgList);
@@ -109,7 +124,7 @@ public class OrganizationControllerTest {
         request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
-        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByName(request, "Asink, Inc", optInt, optInt);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByName("Asink, Inc", optInt, optInt);
         assert(response.getStatusCode() == HttpStatus.OK);
         OrganizationListModel orgList = response.getBody().getContent();
         assertNotNull(orgList);
@@ -124,7 +139,7 @@ public class OrganizationControllerTest {
         request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findByNameSerialNumberCountry(anyString(), anyString(), anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
-        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByNameSerialNumberCountry(request, "example.com", "1234", "US", optInt, optInt);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByNameSerialNumberCountry("example.com", "1234", "US", optInt, optInt);
         assert(response.getStatusCode() == HttpStatus.OK);
         OrganizationListModel orgList = response.getBody().getContent();
         assertNotNull(orgList);
@@ -139,7 +154,7 @@ public class OrganizationControllerTest {
         request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findByNameSerialNumberCountryState(anyString(), anyString(), anyString(), anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
-        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByNameSerialNumberCountryState(request, "example.com", "1234", "US", "AZ", optInt, optInt);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByNameSerialNumberCountryState("example.com", "1234", "US", "AZ", optInt, optInt);
         assert(response.getStatusCode() == HttpStatus.OK);
         OrganizationListModel orgList = response.getBody().getContent();
         assertNotNull(orgList);

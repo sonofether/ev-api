@@ -102,31 +102,6 @@ public class LoggingService implements ILoggingService {
     private void createIndex(String index) throws Exception {
         CreateIndexRequest createRequest = new CreateIndexRequest(index);
         
-        /*
-        Map<String, Object> keywordType = new HashMap<>();
-        keywordType.put("type", "keyword");
-        Map<String, Object> shortType = new HashMap<>();
-        shortType.put("type", "short");
-        Map<String, Object> dateType = new HashMap<>();
-        dateType.put("type", "date");
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("ip", keywordType);
-        properties.put("operation", keywordType);
-        properties.put("endpoint", keywordType);
-        properties.put("arguments", keywordType);
-        properties.put("ca", keywordType);
-        properties.put("offset", shortType);
-        properties.put("limit", shortType);
-        properties.put("count", shortType);
-        properties.put("submitted", dateType);
-        Map<String, Object> record = new HashMap<>();
-        record.put("properties", properties);
-        Map<String, Object> mappings = new HashMap<>();
-        mappings.put("record", record);
-        Map<String, Object> indexMap = new HashMap<>();
-        indexMap.put("mappings", indexMap);
-        */
-        
         Map<String, Object> indexMap = LogModel.createIndex();
         
         createRequest.mapping("record", indexMap);
