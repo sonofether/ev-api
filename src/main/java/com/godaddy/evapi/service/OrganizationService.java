@@ -15,6 +15,8 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godaddy.evapi.model.OrganizationListModel;
 import com.godaddy.evapi.model.OrganizationModel;
 
+@SuppressWarnings("deprecation")
 @Service
 public class OrganizationService extends BaseAWSService implements IOrganizationService {
     @Autowired
@@ -193,7 +196,58 @@ public class OrganizationService extends BaseAWSService implements IOrganization
         return null;
     }
     
+    @Override
+    public OrganizationListModel findByVariableArguments(String filter, int offset, int limit) {
+        QueryBuilder query = buildQueryFromFilters(filter.trim());
+        try {
+            SearchRequest request = generateSearchRequest(query, offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+
+ 
     // PRIVATE FUNCTION CALLS / HELPERS
+    
+    private QueryBuilder buildQueryFromFilters(String filter) {
+        if(filter.length() > 0) {
+            int searchTerms = 0;
+            BoolQueryBuilder query = QueryBuilders.boolQuery();
+            String[] filterTerms = filter.split("and|AND");
+            for(String filterTerm : filterTerms) {
+                String[] parts = filterTerm.trim().split(" ");
+                if(parts.length < 3) {
+                    continue;
+                }
+    
+                String fieldName = parts[0].trim();
+                String searchTerm = parts[2].trim();
+                if(fieldName.length() < 1 || searchTerm.length() < 1) {
+                    continue;
+                }
+                
+                QueryBuilder matchQuery = QueryBuilders.matchQuery(fieldName, searchTerm);
+                String equality = parts[1].trim().toLowerCase();
+                if(equality.equals("eq")) {
+                    ++searchTerms;
+                    query = query.must(matchQuery);
+                } else if (equality.equals("neq")) {
+                    ++searchTerms;
+                    query = query.mustNot(matchQuery);
+                }
+            }
+            
+            if(++searchTerms > 0) {
+                return query;
+            }
+        }
+        
+        return QueryBuilders.matchAllQuery();
+    }
     
     private OrganizationListModel findRecords(SearchResponse response, int offset, int limit) {
         OrganizationListModel orgList = new OrganizationListModel();

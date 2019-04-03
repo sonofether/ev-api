@@ -1,6 +1,7 @@
 package com.godaddy.evapi.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -14,9 +15,12 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godaddy.evapi.model.FlaglistListModel;
 import com.godaddy.evapi.model.FlaglistModel;
 
+@SuppressWarnings("deprecation")
 @Service
 public class FlaglistService  extends BaseAWSService implements IFlaglistService {
     @Autowired
@@ -75,6 +80,26 @@ public class FlaglistService  extends BaseAWSService implements IFlaglistService
         
         return result;
     }
+    
+    @Override
+    public boolean deleteByDateAndSource(Date date, String source) {
+        boolean result = false;
+        try {
+            QueryBuilder rangeQuery = QueryBuilders.rangeQuery("lastUpdated").lte(date);
+            QueryBuilder matchQuery = QueryBuilders.matchQuery("source", source);
+            QueryBuilder query = QueryBuilders.boolQuery().must(matchQuery).must(rangeQuery);
+
+            DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(INDEX).types(TYPE);
+            deleteByQueryRequest.setQuery( query );
+            restClient.deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        return result;
+    }
+
+
     
     // Read/Get
     @Override
@@ -152,9 +177,75 @@ public class FlaglistService  extends BaseAWSService implements IFlaglistService
             return null;
         }
     }
+    
+    @Override
+    public FlaglistListModel findByDateAndSource(Date date, String source, int offset, int limit) {
+        try {
+            QueryBuilder rangeQuery = QueryBuilders.rangeQuery("lastUpdated").lte(date);
+            QueryBuilder matchQuery = QueryBuilders.matchQuery("source", source);
+            QueryBuilder query = QueryBuilders.boolQuery().must(matchQuery).must(rangeQuery);
+            SearchRequest request = generateSearchRequest(query, offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    @Override
+    public FlaglistListModel findByVariableArguments(String filter, int offset, int limit) {
+        QueryBuilder query = buildQueryFromFilters(filter.trim());
+        try {
+            SearchRequest request = generateSearchRequest(query, offset, limit, INDEX, TYPE);
+            SearchResponse response = restClient.search(request);
+            return findRecords(response, offset, limit);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        return null;
+    }
 
  
     // PRIVATE FUNCTION CALLS / HELPERS
+    
+    private QueryBuilder buildQueryFromFilters(String filter) {
+        if(filter.length() > 0) {
+            int searchTerms = 0;
+            BoolQueryBuilder query = QueryBuilders.boolQuery();
+            String[] filterTerms = filter.split("and|AND");
+            for(String filterTerm : filterTerms) {
+                String[] parts = filterTerm.trim().split(" ");
+                if(parts.length < 3) {
+                    continue;
+                }
+    
+                String fieldName = parts[0].trim();
+                String searchTerm = parts[2].trim();
+                if(fieldName.length() < 1 || searchTerm.length() < 1) {
+                    continue;
+                }
+                
+                QueryBuilder matchQuery = QueryBuilders.matchQuery(fieldName, searchTerm);
+                String equality = parts[1].trim().toLowerCase();
+                if(equality.equals("eq")) {
+                    ++searchTerms;
+                    query = query.must(matchQuery);
+                } else if (equality.equals("neq")) {
+                    ++searchTerms;
+                    query = query.mustNot(matchQuery);
+                }
+            }
+            
+            if(++searchTerms > 0) {
+                return query;
+            }
+        }
+        
+        return QueryBuilders.matchAllQuery();
+    }
     
     private FlaglistListModel findRecords(SearchResponse response, int offset, int limit) {
         FlaglistListModel flaglistList = new FlaglistListModel();

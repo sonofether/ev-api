@@ -75,7 +75,8 @@ public class FlaglistControllerTest {
         Optional<Integer> optInt = Optional.empty();
         when(loggingService.insertLog(any())).thenReturn(true);
         when(flaglistService.findAll(anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
-        ResponseEntity<Resource<FlaglistListModel>> response = flController.getAll(optInt, optInt);
+        when(flaglistService.findByVariableArguments(anyString(), anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getAll(optInt, optInt, "");
         assert(response.getStatusCode() == HttpStatus.OK);
         FlaglistListModel flList = response.getBody().getContent();
         assertNotNull(flList);

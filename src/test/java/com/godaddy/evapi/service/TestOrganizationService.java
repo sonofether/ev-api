@@ -93,4 +93,10 @@ public class TestOrganizationService implements IOrganizationService {
     public OrganizationListModel findByPhoneNumber(String phoneNumber, int offset, int limit) {
         return generateOrganizationList();
     }
+
+    @Override
+    public OrganizationListModel findByVariableArguments(String filter, int offset, int limit) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

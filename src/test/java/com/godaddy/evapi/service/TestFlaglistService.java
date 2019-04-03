@@ -1,6 +1,7 @@
 package com.godaddy.evapi.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -72,5 +73,23 @@ public class TestFlaglistService implements IFlaglistService {
     @Override
     public FlaglistListModel findBySource(String source, int offset, int limit) {
         return generateFlaglistList();
+    }
+
+    @Override
+    public boolean deleteByDateAndSource(Date date, String source) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public FlaglistListModel findByDateAndSource(Date date, String source, int offset, int limit) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public FlaglistListModel findByVariableArguments(String filter, int offset, int limit) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

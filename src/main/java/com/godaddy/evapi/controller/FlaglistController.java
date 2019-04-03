@@ -1,5 +1,6 @@
 package com.godaddy.evapi.controller;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,10 +51,10 @@ public class FlaglistController extends BaseController {
     @ApiOperation(value = "Gets all flag list records", response = FlaglistListModel.class)
     public ResponseEntity<Resource<FlaglistListModel>> getAll(
                 @RequestParam( value="offset") Optional<Integer> offsetValue,
-                @RequestParam( value="limit") Optional<Integer> limitValue) {
+                @RequestParam( value="limit") Optional<Integer> limitValue,
+                @RequestParam( value="filters", defaultValue="") String filters) {
         setOffsetLimit(offsetValue,limitValue);
-        FlaglistListModel entries = flaglistService.findAll(this.offset, this.limit);
-        
+        FlaglistListModel entries = flaglistService.findByVariableArguments(filters, this.offset, this.limit);
         // Return found entries
         if(entries.getCount() > 0) {
             Resource<FlaglistListModel> resource = new Resource<>(entries, generateLinks(request, this.offset, this.limit, entries.getCount()));
@@ -61,8 +62,7 @@ public class FlaglistController extends BaseController {
             return ResponseEntity.ok(resource);
         }
 
-        //public LogModel(String ip, String operation, String endpoint, String args, String ca, String result, int offset, int count, int limit, int code)
-        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist", "", getCAName(), "NOT_FOUND", this.offset, 0, this.limit, 404) );
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist", filters, getCAName(), "NOT_FOUND", this.offset, 0, this.limit, 404) );
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     
@@ -144,6 +144,24 @@ public class FlaglistController extends BaseController {
         }
         loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist/" + id, "", getCAName(), "OK", 0, 1, 0, 404) );
         return new ResponseEntity<FlaglistModel>(result, HttpStatus.OK);
+    }
+    
+    @GetMapping("/ofac")
+    @ApiOperation(value = "Get a list of flag list records matching ofac source", response = FlaglistListModel.class)
+    public ResponseEntity<Resource<FlaglistListModel>> getFlaglistBySource(@RequestParam( value="offset") Optional<Integer> offsetValue,
+                @RequestParam( value="limit") Optional<Integer> limitValue) {
+        setOffsetLimit(offsetValue,limitValue);
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -7);
+        FlaglistListModel entries = flaglistService.findByDateAndSource( cal.getTime(), "OFAC", this.offset, this.limit);
+        if(entries != null && entries.getCount() > 0) {
+            Resource<FlaglistListModel> resource = new Resource<>(entries, generateLinks(request, this.offset, this.limit, entries.getCount()));
+            loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist/ofac/", "", getCAName(), "OK", this.offset, entries.getCount(), this.limit, 200) );
+            return ResponseEntity.ok(resource);
+        }
+        
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist/ofac/", "", getCAName(), "OK", this.offset, 0, this.limit, 404) );
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
        
     @GetMapping("/commonName/{cname}")
@@ -252,6 +270,8 @@ public class FlaglistController extends BaseController {
         return isValid;
     }
 
+    
+    
     private boolean recordExists(FlaglistInputModel flEntry) {
         boolean recordExists = false;
         FlaglistListModel entries = flaglistService.findByCommonName(flEntry.getCommonName().trim(), 0, 1);

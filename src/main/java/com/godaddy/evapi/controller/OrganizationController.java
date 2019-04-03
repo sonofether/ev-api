@@ -1,10 +1,7 @@
 package com.godaddy.evapi.controller;
 
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -13,12 +10,10 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.godaddy.evapi.model.BlacklistListModel;
 import com.godaddy.evapi.model.CertificateModel;
 import com.godaddy.evapi.model.CollisionModel;
 import com.godaddy.evapi.model.IdModel;
@@ -41,7 +35,6 @@ import com.godaddy.evapi.service.ICertificateService;
 import com.godaddy.evapi.service.ILoggingService;
 import com.godaddy.evapi.service.IOrganizationService;
 
-import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -70,16 +63,17 @@ public class OrganizationController extends BaseController {
     @ApiOperation(value = "Gets all organization records, paginated", response = OrganizationListModel.class)
     public ResponseEntity<Resource<OrganizationListModel>> GetOrganizationList(
                 @RequestParam( value="offset") Optional<Integer> offsetValue,
-                @RequestParam( value="limit") Optional<Integer> limitValue) {
+                @RequestParam( value="limit") Optional<Integer> limitValue, 
+                @RequestParam( value="filters", defaultValue="") String filters) {
         setOffsetLimit(offsetValue,limitValue);
-        OrganizationListModel orgList = organizationService.findAll(this.offset, this.limit);
+        OrganizationListModel orgList = organizationService.findByVariableArguments(filters, this.offset, this.limit);
         if(orgList.getCount() < 1) {
             loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/", "", getCAName(), "NOT_FOUND", this.offset, 0, this.limit, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }        
         
         Resource<OrganizationListModel> resource = new Resource<>(orgList, generateLinks(request, this.offset, this.limit, orgList.getCount()));
-        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/", "", getCAName(), "OK", this.offset, orgList.getCount(), this.limit, 200) );
+        loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/", filters, getCAName(), "OK", this.offset, orgList.getCount(), this.limit, 200) );
         return ResponseEntity.ok(resource);
     }
     

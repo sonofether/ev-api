@@ -78,7 +78,8 @@ public class OrganizationControllerTest {
         request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findAll(anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
-        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationList(optInt, optInt);
+        when(organizationService.findByVariableArguments(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationList(optInt, optInt, "");
         assert(response.getStatusCode() == HttpStatus.OK);
         OrganizationListModel orgList = response.getBody().getContent();
         assertNotNull(orgList);
