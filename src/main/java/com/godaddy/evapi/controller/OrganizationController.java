@@ -67,7 +67,7 @@ public class OrganizationController extends BaseController {
                 @RequestParam( value="filters", defaultValue="") String filters) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByVariableArguments(filters, this.offset, this.limit);
-        if(orgList.getCount() < 1) {
+        if(orgList == null || orgList.getCount() < 1) {
             loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/", "", getCAName(), "NOT_FOUND", this.offset, 0, this.limit, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }        
@@ -144,7 +144,7 @@ public class OrganizationController extends BaseController {
                 @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByOrganizationName(name, this.offset, this.limit);
-        if(orgList.getCount() < 1) {
+        if(orgList == null || orgList.getCount() < 1) {
             loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/name/" + name, "", getCAName(), "NOT_FOUND", 0, 0, 0, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -160,7 +160,7 @@ public class OrganizationController extends BaseController {
                 @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByCommonName(name, this.offset, this.limit);
-        if(orgList.getCount() < 1) {
+        if(orgList == null || orgList.getCount() < 1) {
             loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/commonname/" + name, "", getCAName(), "NOT_FOUND", 0, 0, 0, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -176,7 +176,7 @@ public class OrganizationController extends BaseController {
                 @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findBySerialNumber(serialNumber, this.offset, this.limit);
-        if(orgList.getCount() < 1) {
+        if(orgList == null || orgList.getCount() < 1) {
             loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/serial" + serialNumber, "", getCAName(), "NOT_FOUND", 0, 0, 0, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -194,7 +194,7 @@ public class OrganizationController extends BaseController {
                 @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByNameSerialNumberCountry(name, serialNumber, country,this.offset, this.limit);
-        if(orgList.getCount() < 1) {
+        if(orgList == null || orgList.getCount() < 1) {
             loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/" + name + "/" + serialNumber + "/" + country, "", getCAName(), "NOT_FOUND", 0, 0, 0, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -213,7 +213,7 @@ public class OrganizationController extends BaseController {
                 @RequestParam( value="offset") Optional<Integer> offsetValue, @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         OrganizationListModel orgList = organizationService.findByNameSerialNumberCountryState(name, serialNumber, country, state, this.offset, this.limit);
-        if(orgList.getCount() < 1) {
+        if(orgList == null || orgList.getCount() < 1) {
             loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/" + name + "/" + serialNumber + "/" + country + "/" + state, "", getCAName(), "NOT_FOUND", 0, 0, 0, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -228,7 +228,7 @@ public class OrganizationController extends BaseController {
     public CollisionModel CollisionDetectByOrganizationName(@ApiParam(name="name", value="Organization Name to search", required = true) @PathVariable(value="name") String name) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findByOrganizationName(name, 0, 1);
-        if(orgList.getCount() > 0) {
+        if(orgList == null || orgList.getCount() > 0) {
             collision.setCollision(true);
         }
         
@@ -242,7 +242,7 @@ public class OrganizationController extends BaseController {
     public CollisionModel CollisionDetectByCommonName(@ApiParam(name="commonName", value="Common Name to search", required = true) @PathVariable(value="commonName") String commonName) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findByCommonName(commonName, 0, 1);
-        if(orgList.getCount() > 0) {
+        if(orgList == null || orgList.getCount() > 0) {
             collision.setCollision(true);
         }
         
@@ -257,7 +257,7 @@ public class OrganizationController extends BaseController {
     public CollisionModel CollisionDetectBySerialNumber(@ApiParam(name="serialNumber", value="Serial Number to search", required = true) @PathVariable(value="serialNumber") String serialNumber) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findBySerialNumber(serialNumber, 0, 1);
-        if(orgList.getCount() > 0) {
+        if(orgList == null || orgList.getCount() > 0) {
             collision.setCollision(true);
         }
         
@@ -273,7 +273,7 @@ public class OrganizationController extends BaseController {
                 ) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findByNameSerialNumberCountry(name, serialNumber, country, 0, 1);
-        if(orgList.getCount() > 0) {
+        if(orgList != null && orgList.getCount() > 0) {
             collision.setCollision(true);
         }
         
@@ -289,7 +289,7 @@ public class OrganizationController extends BaseController {
                 @ApiParam(name="state", value="State to search", required = true) @PathVariable(value="state") String state) {
         CollisionModel collision = new CollisionModel();
         OrganizationListModel orgList = organizationService.findByNameSerialNumberCountryState(name, serialNumber, country, state, 0, 1);
-        if(orgList.getCount() > 0) {
+        if(orgList != null && orgList.getCount() > 0) {
             collision.setCollision(true);
         }
         
@@ -303,9 +303,9 @@ public class OrganizationController extends BaseController {
         // TODO: We may need to be more granular when checking the organization name - Might need region.
         boolean result = false;
         OrganizationListModel orgList = organizationService.findByOrganizationName(name, this.offset, this.limit);
-        if(orgList.getCount() < 1) {
+        if(orgList != null && orgList.getCount() < 1) {
             orgList = organizationService.findByCommonName(cName, 0, 1);
-            if(orgList.getCount() < 1) {
+            if(orgList != null && orgList.getCount() < 1) {
                 result = true;
             }
         }

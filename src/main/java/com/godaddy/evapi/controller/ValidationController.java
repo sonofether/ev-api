@@ -72,7 +72,7 @@ public class ValidationController extends BaseController{
                 @RequestParam( "offset" ) Optional<Integer> offset, @RequestParam( "limit" ) Optional<Integer> limit) {
         setOffsetLimit(offset, limit);
         ValidationListModel viList = validationService.findAll(this.offset, this.limit);
-        if(viList.getCount() < 1) {
+        if(viList == null || viList.getCount() < 1) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }        
             

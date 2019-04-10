@@ -52,7 +52,7 @@ public class BlacklistController extends BaseController {
         BlacklistListModel entries = blacklistService.findAll(this.offset, this.limit);
         
         // Return found entries
-        if(entries.getCount() > 0) {
+        if(entries != null && entries.getCount() > 0) {
             Resource<BlacklistListModel> resource = new Resource<>(entries, generateLinks(request, this.offset, this.limit, entries.getCount()));
             return ResponseEntity.ok(resource);
         }

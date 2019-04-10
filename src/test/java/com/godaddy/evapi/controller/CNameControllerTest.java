@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.godaddy.evapi.model.BlacklistDTOModel;
+import com.godaddy.evapi.model.BlacklistListModel;
 import com.godaddy.evapi.model.BlacklistModel;
 import com.godaddy.evapi.service.IBlacklistService;
 import com.godaddy.evapi.service.TestBlacklistService;
@@ -41,6 +42,13 @@ public class CNameControllerTest {
     }
     
     @Test
+    public void cNameControllerGetFailureTest() {
+        when(blacklistService.findById(anyString())).thenReturn(null);
+        ResponseEntity<BlacklistModel> response = cNameController.getById("1234");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+    @Test
     public void cNameControllerCheckBlacklistTest() {
         when(blacklistService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(TestBlacklistService.generateBlacklistList());
         BlacklistDTOModel response = cNameController.getBlacklistByCName("example.com");
@@ -48,6 +56,22 @@ public class CNameControllerTest {
         assert(response.isBlacklisted());
     }
     
+    @Test
+    public void cNameControllerCheckBlacklistFailureTest() {
+        when(blacklistService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        BlacklistDTOModel response = cNameController.getBlacklistByCName("example.com");
+        assertNotNull(response);
+        assert(response.isBlacklisted() == false);
+    }
+    
+    @Test
+    public void cNameControllerCheckBlacklistFailureTest2() {
+        when(blacklistService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(new BlacklistListModel());
+        BlacklistDTOModel response = cNameController.getBlacklistByCName("example.com");
+        assertNotNull(response);
+        assert(response.isBlacklisted() == false);
+    }
+
     @Test
     public void testDelete() {
         ResponseEntity<HttpStatus> response = cNameController.delete("");

@@ -53,6 +53,14 @@ public class BlacklistControllerTest {
         assertNotNull(bl);
         assert(bl.getCommonName().equals("example.com"));
     }
+
+    @Test
+    public void blacklistControllerGetByIdFailureTest() {
+        when(blacklistService.findById(anyString())).thenReturn(null);
+        ResponseEntity<BlacklistModel> response = blController.getById("1234");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
     
     @Test
     public void blacklistControllerGetAll() {
@@ -69,6 +77,34 @@ public class BlacklistControllerTest {
         assertNotNull(blList);
         assert(blList.getBlacklistEntries().get(0).getCommonName().equals("example.com"));
     }
+    
+    @Test
+    public void blacklistControllerGetAllFailure() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("1.2.3.4");
+        request.setServerName("www.example.com");
+        request.setRequestURI("/");
+        request.setQueryString("");
+        Optional<Integer> optInt = Optional.empty();
+        when(blacklistService.findAll(anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<BlacklistListModel>> response = blController.getAll(request, optInt, optInt);
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+    
+    @Test
+    public void blacklistControllerGetAllFailure2() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("1.2.3.4");
+        request.setServerName("www.example.com");
+        request.setRequestURI("/");
+        request.setQueryString("");
+        Optional<Integer> optInt = Optional.empty();
+        when(blacklistService.findAll(anyInt(), anyInt())).thenReturn(new BlacklistListModel());
+        ResponseEntity<Resource<BlacklistListModel>> response = blController.getAll(request, optInt, optInt);
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+
 
     @Test
     public void blacklistControllerGetByCA() {
@@ -88,6 +124,32 @@ public class BlacklistControllerTest {
     }
     
     @Test
+    public void blacklistControllerGetByCAFailure() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("1.2.3.4");
+        request.setServerName("www.example.com");
+        request.setRequestURI("/");
+        request.setQueryString("");
+        Optional<Integer> optInt = Optional.empty();
+        when(blacklistService.findByCA(anyString(), anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<BlacklistListModel>> response = blController.getBlacklistByCA(request, optInt, optInt, "My CA");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void blacklistControllerGetByCAFailure2() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("1.2.3.4");
+        request.setServerName("www.example.com");
+        request.setRequestURI("/");
+        request.setQueryString("");
+        Optional<Integer> optInt = Optional.empty();
+        when(blacklistService.findByCA(anyString(), anyInt(), anyInt())).thenReturn(new BlacklistListModel());
+        ResponseEntity<Resource<BlacklistListModel>> response = blController.getBlacklistByCA(request, optInt, optInt, "My CA");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+    @Test
     public void blacklistControllerGetByCName() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRemoteAddr("1.2.3.4");
@@ -103,6 +165,33 @@ public class BlacklistControllerTest {
         assert(blList.getBlacklistEntries().get(0).getCommonName().equals("example.com"));
 
     }
+    
+    @Test
+    public void blacklistControllerGetByCNameFailure() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("1.2.3.4");
+        request.setServerName("www.example.com");
+        request.setRequestURI("/");
+        request.setQueryString("");
+        Optional<Integer> optInt = Optional.empty();
+        when(blacklistService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<BlacklistListModel>> response = blController.getBlacklistByCName(request, optInt, optInt, "example.com");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void blacklistControllerGetByCNameFailure2() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRemoteAddr("1.2.3.4");
+        request.setServerName("www.example.com");
+        request.setRequestURI("/");
+        request.setQueryString("");
+        Optional<Integer> optInt = Optional.empty();
+        when(blacklistService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(new BlacklistListModel());
+        ResponseEntity<Resource<BlacklistListModel>> response = blController.getBlacklistByCName(request, optInt, optInt, "example.com");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
     
     @Test
     public void blacklistControllerCreate() {

@@ -79,7 +79,7 @@ public class CNameController {
         if(cName != null && cName.length() > 2) {
             BlacklistListModel entries = blacklistService.findByCommonName(cName,0, 1);
             // If any entries, return true
-            if(entries.getCount() > 0) {
+            if(entries != null && entries.getCount() > 0) {
                 result.setBlacklisted(true);
             }
         }

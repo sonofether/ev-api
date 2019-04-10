@@ -56,9 +56,9 @@ public class FlaglistController extends BaseController {
         setOffsetLimit(offsetValue,limitValue);
         FlaglistListModel entries = flaglistService.findByVariableArguments(filters, this.offset, this.limit);
         // Return found entries
-        if(entries.getCount() > 0) {
+        if(entries != null && entries.getCount() > 0) {
             Resource<FlaglistListModel> resource = new Resource<>(entries, generateLinks(request, this.offset, this.limit, entries.getCount()));
-            loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist", "", getCAName(), "OK", this.offset, entries.getCount(), this.limit, 200) );
+            loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist", filters, getCAName(), "OK", this.offset, entries.getCount(), this.limit, 200) );
             return ResponseEntity.ok(resource);
         }
 
@@ -138,6 +138,10 @@ public class FlaglistController extends BaseController {
     @ApiOperation(value = "Get a flag list record by id", response = FlaglistModel.class)
     public ResponseEntity<FlaglistModel> getById(@ApiParam(name="id", value="Record id", required = true) @PathVariable(value="id") String id) {
         FlaglistModel result = flaglistService.findById(id);
+        
+        String ca = getCAName();
+        String host = request.getRemoteHost();
+        
         if(result == null) {
             loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/flaglist/" + id, "", getCAName(), "NOT_FOUND", 0, 0, 0, 404) );
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

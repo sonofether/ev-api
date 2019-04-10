@@ -52,11 +52,13 @@ public class OrganizationControllerTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         when(request.getRemoteAddr()).thenReturn("127.0.0.1");
+        when(request.getRemoteHost()).thenReturn("127.0.0.1");
         when(request.getServerName()).thenReturn("www.example.com");
         when(request.getRequestURI()).thenReturn("/");
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://example.com/"));
         when(request.getQueryString()).thenReturn("");
         when(loggingService.insertLog(any())).thenReturn(true);
+        SetupAuthentication();
     }
     
     @Test
@@ -70,12 +72,14 @@ public class OrganizationControllerTest {
     }
     
     @Test
+    public void organizationControllerGetFailureTest() {
+        when(organizationService.findById(anyString())).thenReturn(null);
+        ResponseEntity<OrganizationModel> response = orgController.GetOrganization("1234");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+    
+    @Test
     public void organizationControllerGetAllTest() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRemoteAddr("1.2.3.4");
-        request.setServerName("www.example.com");
-        request.setRequestURI("/");
-        request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findAll(anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
         when(organizationService.findByVariableArguments(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
@@ -87,12 +91,25 @@ public class OrganizationControllerTest {
     }
     
     @Test
+    public void organizationControllerGetAllFailureTest() {
+        Optional<Integer> optInt = Optional.empty();
+        when(organizationService.findAll(anyInt(), anyInt())).thenReturn(new OrganizationListModel());
+        when(organizationService.findByVariableArguments(anyString(), anyInt(), anyInt())).thenReturn(new OrganizationListModel());
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationList(optInt, optInt, "");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void organizationControllerGetAllFailureTest2() {
+        Optional<Integer> optInt = Optional.empty();
+        when(organizationService.findAll(anyInt(), anyInt())).thenReturn(new OrganizationListModel());
+        when(organizationService.findByVariableArguments(anyString(), anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationList(optInt, optInt, "");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+    @Test
     public void organizationControllerGetBySerialNumberTest() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRemoteAddr("1.2.3.4");
-        request.setServerName("www.example.com");
-        request.setRequestURI("/");
-        request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findBySerialNumber(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
         ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationBySerialNumber("1234", optInt, optInt);
@@ -103,11 +120,23 @@ public class OrganizationControllerTest {
     }
     
     @Test
+    public void organizationControllerGetBySerialNumberFailureTest() {
+        Optional<Integer> optInt = Optional.empty();
+        when(organizationService.findBySerialNumber(anyString(), anyInt(), anyInt())).thenReturn(new OrganizationListModel());
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationBySerialNumber("1234", optInt, optInt);
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void organizationControllerGetBySerialNumberFailureTest2() {
+        Optional<Integer> optInt = Optional.empty();
+        when(organizationService.findBySerialNumber(anyString(), anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationBySerialNumber("1234", optInt, optInt);
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+    
+    @Test
     public void organizationControllerGetByCommonNameTest() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setServerName("www.example.com");
-        request.setRequestURI("/");
-        request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
         ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByCommonName("example.com", optInt, optInt);
@@ -118,11 +147,23 @@ public class OrganizationControllerTest {
     }
     
     @Test
+    public void organizationControllerGetByCommonNameFailureTest() {
+        Optional<Integer> optInt = Optional.empty();
+        when(organizationService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(new OrganizationListModel());
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByCommonName("example.com", optInt, optInt);
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+    
+    @Test
+    public void organizationControllerGetByCommonNameFailureTest2() {
+        Optional<Integer> optInt = Optional.empty();
+        when(organizationService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByCommonName("example.com", optInt, optInt);
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+    @Test
     public void organizationControllerGetByOrganizationNameTest() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setServerName("www.example.com");
-        request.setRequestURI("/");
-        request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
         ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByName("Asink, Inc", optInt, optInt);
@@ -133,11 +174,24 @@ public class OrganizationControllerTest {
     }
     
     @Test
+    public void organizationControllerGetByOrganizationNameFailureTest() {
+        Optional<Integer> optInt = Optional.empty();
+        when(organizationService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(new OrganizationListModel());
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByName("Asink, Inc", optInt, optInt);
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+    
+    @Test
+    public void organizationControllerGetByOrganizationNameFailureTest2() {
+        Optional<Integer> optInt = Optional.empty();
+        when(organizationService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByName("Asink, Inc", optInt, optInt);
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+    
+    @Test
     public void organizationControllerGetByNameSerialNumberCountry() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setServerName("www.example.com");
-        request.setRequestURI("/");
-        request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findByNameSerialNumberCountry(anyString(), anyString(), anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
         ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByNameSerialNumberCountry("example.com", "1234", "US", optInt, optInt);
@@ -148,11 +202,24 @@ public class OrganizationControllerTest {
     }
 
     @Test
+    public void organizationControllerGetByNameSerialNumberCountryFailure() {
+        Optional<Integer> optInt = Optional.empty();
+        when(organizationService.findByNameSerialNumberCountry(anyString(), anyString(), anyString(), anyInt(), anyInt())).thenReturn(new OrganizationListModel());
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByNameSerialNumberCountry("example.com", "1234", "US", optInt, optInt);
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void organizationControllerGetByNameSerialNumberCountryFailure2() {
+        Optional<Integer> optInt = Optional.empty();
+        when(organizationService.findByNameSerialNumberCountry(anyString(), anyString(), anyString(), anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByNameSerialNumberCountry("example.com", "1234", "US", optInt, optInt);
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+    
+    @Test
     public void organizationControllerGetByNameSerialNumberCountryState() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setServerName("www.example.com");
-        request.setRequestURI("/");
-        request.setQueryString("");
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findByNameSerialNumberCountryState(anyString(), anyString(), anyString(), anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
         ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByNameSerialNumberCountryState("example.com", "1234", "US", "AZ", optInt, optInt);
@@ -161,11 +228,27 @@ public class OrganizationControllerTest {
         assertNotNull(orgList);
         assert(orgList.getOrganizations().get(0).getCommonName().equals("example.com"));
     }
+
+    @Test
+    public void organizationControllerGetByNameSerialNumberCountryStateFailure() {
+        Optional<Integer> optInt = Optional.empty();
+        when(organizationService.findByNameSerialNumberCountryState(anyString(), anyString(), anyString(), anyString(), anyInt(), anyInt())).thenReturn(new OrganizationListModel());
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByNameSerialNumberCountryState("example.com", "1234", "US", "AZ", optInt, optInt);
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void organizationControllerGetByNameSerialNumberCountryStateFailure2() {
+        Optional<Integer> optInt = Optional.empty();
+        when(organizationService.findByNameSerialNumberCountryState(anyString(), anyString(), anyString(), anyString(), anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationByNameSerialNumberCountryState("example.com", "1234", "US", "AZ", optInt, optInt);
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
     
     // TODO Finish unit tests once writes are working
     @Test
     public void organizationControllerSaveTest() {
-        SetupAuthentication();
         /*
         Optional<Integer> optInt = Optional.empty();
         Authentication authMock = Mockito.mock(Authentication.class);

@@ -29,6 +29,7 @@ import com.godaddy.evapi.model.FlaglistInputModel;
 import com.godaddy.evapi.model.FlaglistListModel;
 import com.godaddy.evapi.model.FlaglistModel;
 import com.godaddy.evapi.model.IdModel;
+import com.godaddy.evapi.model.LogModel;
 import com.godaddy.evapi.service.IFlaglistService;
 import com.godaddy.evapi.service.ILoggingService;
 import com.godaddy.evapi.service.TestFlaglistService;
@@ -52,15 +53,17 @@ public class FlaglistControllerTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         when(request.getRemoteAddr()).thenReturn("127.0.0.1");
+        when(request.getRemoteHost()).thenReturn("127.0.0.1");
         when(request.getServerName()).thenReturn("www.example.com");
         when(request.getRequestURI()).thenReturn("/");
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://example.com/"));
         when(request.getQueryString()).thenReturn("");
         when(loggingService.insertLog(any())).thenReturn(true);
+        SetupAuthentication();
     }
     
     @Test
-    public void blacklistControllerGetByIdTest() {
+    public void flaglistControllerGetByIdTest() {
         when(flaglistService.findById(anyString())).thenReturn(TestFlaglistService.generateFlaglist());
         ResponseEntity<FlaglistModel> response = flController.getById("1234");
         assert(response.getStatusCode() == HttpStatus.OK);
@@ -70,8 +73,7 @@ public class FlaglistControllerTest {
     }
     
     @Test
-    public void blacklistControllerGetAll() {
-
+    public void flaglistControllerGetAll() {
         Optional<Integer> optInt = Optional.empty();
         when(loggingService.insertLog(any())).thenReturn(true);
         when(flaglistService.findAll(anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
@@ -82,14 +84,30 @@ public class FlaglistControllerTest {
         assertNotNull(flList);
         assert(flList.getFlaglistEntries().get(0).getCommonName().equals("example.com"));
     }
+    
+    @Test
+    public void flaglistControllerGetAllFailure() {
+        Optional<Integer> optInt = Optional.empty();
+        when(loggingService.insertLog(any())).thenReturn(true);
+        when(flaglistService.findAll(anyInt(), anyInt())).thenReturn(null);
+        when(flaglistService.findByVariableArguments(anyString(), anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getAll(optInt, optInt, "");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
 
     @Test
-    public void blacklistControllerGetByCA() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRemoteAddr("1.2.3.4");
-        request.setServerName("www.example.com");
-        request.setRequestURI("/");
-        request.setQueryString("");
+    public void flaglistControllerGetAllFailure2() {
+        Optional<Integer> optInt = Optional.empty();
+        when(loggingService.insertLog(any())).thenReturn(true);
+        when(flaglistService.findAll(anyInt(), anyInt())).thenReturn(new FlaglistListModel());
+        when(flaglistService.findByVariableArguments(anyString(), anyInt(), anyInt())).thenReturn(new FlaglistListModel());
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getAll(optInt, optInt, "");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+
+    @Test
+    public void flaglistControllerGetByCA() {
         Optional<Integer> optInt = Optional.empty();
         when(flaglistService.findByCA(anyString(), anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
         ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByCA(optInt, optInt, "My CA");
@@ -101,12 +119,23 @@ public class FlaglistControllerTest {
     }
     
     @Test
-    public void blacklistControllerGetByCName() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRemoteAddr("1.2.3.4");
-        request.setServerName("www.example.com");
-        request.setRequestURI("/");
-        request.setQueryString("");
+    public void flaglistControllerGetByCAFailure() {
+        Optional<Integer> optInt = Optional.empty();
+        when(flaglistService.findByCA(anyString(), anyInt(), anyInt())).thenReturn(new FlaglistListModel());
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByCA(optInt, optInt, "My CA");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void flaglistControllerGetByCAFailure2() {
+        Optional<Integer> optInt = Optional.empty();
+        when(flaglistService.findByCA(anyString(), anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByCA(optInt, optInt, "My CA");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void flaglistControllerGetByCName() {
         Optional<Integer> optInt = Optional.empty();
         when(flaglistService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
         ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByCName(optInt, optInt, "example.com");
@@ -118,12 +147,7 @@ public class FlaglistControllerTest {
     }
     
     @Test
-    public void blacklistControllerGetByOrgName() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRemoteAddr("1.2.3.4");
-        request.setServerName("www.example.com");
-        request.setRequestURI("/");
-        request.setQueryString("");
+    public void flaglistControllerGetByOrgName() {
         Optional<Integer> optInt = Optional.empty();
         when(flaglistService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
         ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByName(optInt, optInt, "organizagtion name");
@@ -134,12 +158,7 @@ public class FlaglistControllerTest {
     }
     
     @Test
-    public void blacklistControllerGetBySource() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRemoteAddr("1.2.3.4");
-        request.setServerName("www.example.com");
-        request.setRequestURI("/");
-        request.setQueryString("");
+    public void flaglistControllerGetBySource() {
         Optional<Integer> optInt = Optional.empty();
         when(flaglistService.findBySource(anyString(), anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
         ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistBySource(optInt, optInt, "example.com");
@@ -151,8 +170,7 @@ public class FlaglistControllerTest {
     }
     
     @Test
-    public void blacklistControllerCreate() {
-        SetupAuthentication();
+    public void flaglistControllerCreate() {
         FlaglistInputModel flEntry = new FlaglistInputModel();
         flEntry.setCommonName("myorganizationllc.com");
         flEntry.setOrganizationName("My organization LLC");
@@ -167,8 +185,7 @@ public class FlaglistControllerTest {
     }
     
     @Test
-    public void blacklistControllerCreateFailure() {
-        SetupAuthentication();
+    public void flaglistControllerCreateFailure() {
         FlaglistInputModel flEntry = new FlaglistInputModel();
         flEntry.setCommonName("myorganizationllc.com");
         flEntry.setOrganizationName("My organization LLC");
@@ -182,8 +199,7 @@ public class FlaglistControllerTest {
 
     
     @Test
-    public void blacklistControllerCreateFailure2() {
-        SetupAuthentication();
+    public void flaglistControllerCreateFailure2() {
         FlaglistInputModel blEntry = new FlaglistInputModel();
         blEntry.setCommonName("");
         blEntry.setOrganizationName("");
@@ -196,8 +212,7 @@ public class FlaglistControllerTest {
     }
     
     @Test
-    public void blacklistControllerDelete() {
-        SetupAuthentication();
+    public void flaglistControllerDelete() {
         FlaglistModel value = new FlaglistModel(UUID.randomUUID(), "OrgName", "commonName", "serialNumber", "reason", "My Cool CA", "source", 1);
         when(flaglistService.findById(anyString())).thenReturn(value);
         when(flaglistService.delete(anyString())).thenReturn(true);
@@ -206,8 +221,7 @@ public class FlaglistControllerTest {
     }
 
     @Test
-    public void blacklistControllerDeleteFailure() {
-        SetupAuthentication();
+    public void flaglistControllerDeleteFailure() {
         FlaglistModel value = new FlaglistModel(UUID.randomUUID(), "OrgName", "commonName", "serialNumber", "reason", "insertedBy", "source", 1);
         when(flaglistService.findById(anyString())).thenReturn(value);
         when(flaglistService.delete(anyString())).thenReturn(false);
@@ -216,8 +230,7 @@ public class FlaglistControllerTest {
     }
 
     @Test
-    public void blacklistControllerDeleteFailure2() {
-        SetupAuthentication();
+    public void flaglistControllerDeleteFailure2() {
         when(flaglistService.findById(anyString())).thenReturn(null);
         ResponseEntity<HttpStatus> response = flController.deleteFlaglist("SomeIdString");
         assert(response.getStatusCode() == HttpStatus.BAD_REQUEST);
