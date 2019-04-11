@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.godaddy.evapi.legalentity.ILegalEntity;
+import com.godaddy.evapi.legalentity.LegalEntityFactory;
 import com.godaddy.evapi.model.CertificateModel;
 import com.godaddy.evapi.model.CollisionModel;
 import com.godaddy.evapi.model.IdModel;
@@ -349,9 +351,8 @@ public class OrganizationController extends BaseController {
     
     // TODO: We want to validate the organization entity type in some fashion. 
     // Some classes have been created in legal entity to this end, but it will depend on the country supplied
-    private boolean validateOrganizationName(String orgName) {
-        boolean isValid = false;
-        
-        return isValid;
+    private boolean validateOrganizationName(String countryCode, String orgName) {
+        ILegalEntity le = LegalEntityFactory.GetLegalEntity(countryCode);
+        return le.validate(orgName);
     }    
 }
