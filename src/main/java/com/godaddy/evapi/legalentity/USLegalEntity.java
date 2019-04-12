@@ -29,7 +29,7 @@ public class USLegalEntity extends LegalEntity{
     public static String LLP            = "llp";
     public static String LLPDOTS        = "l.l.p";
     public static String LTDDOTS        = "ltd.";
-    //public static String NATIONAL       = "national";
+    public static String NATIONAL       = "national";
     public static String PARTNERSHIP    = "partnership";
     public static String SOCIETY        = "society";
     public static String SYNDICATE      = "syndicate";
@@ -38,7 +38,7 @@ public class USLegalEntity extends LegalEntity{
     public static String UNIVERSITY     = "university";
     
     public static String[] validTypes = {ASSOCIATION, BANK, BANKING, BANKERS, CHURCH, CODOTS, COLLEGE, COMPANY, CORPDOTS, CORPORATION, CREDITUNION, FCU, FCUDOTS, 
-            FOUNDATION, FUND, INCDOTS, INCORPORATED, INSTITUTE, LCDOTS, LIMITED, LLCDOTS, LLP, LLPDOTS, LTDDOTS, PARTNERSHIP, SOCIETY, SYNDICATE, TRUST, 
+            FOUNDATION, FUND, INCDOTS, INCORPORATED, INSTITUTE, LCDOTS, LIMITED, LLCDOTS, LLP, LLPDOTS, LTDDOTS, NATIONAL, PARTNERSHIP, SOCIETY, SYNDICATE, TRUST, 
             UNION, UNIVERSITY};
     
     public static String CO             = " co";
@@ -53,10 +53,13 @@ public class USLegalEntity extends LegalEntity{
     // TODO: Do we need to break this down by state?
     @Override
     public boolean validate(String organizationName) {
-        String orgName = organizationName.toLowerCase();
-        boolean isValid = Arrays.stream(validTypes).parallel().anyMatch(orgName::contains);
-        if(isValid == false) {
-            isValid = Arrays.stream(validEndings).parallel().anyMatch(orgName::endsWith);
+        boolean isValid = false;
+        if(organizationName != null) {
+            String orgName = organizationName.trim().toLowerCase();
+            isValid = Arrays.stream(validTypes).parallel().anyMatch(orgName::contains);
+            if(isValid == false) {
+                isValid = Arrays.stream(validEndings).parallel().anyMatch(orgName::endsWith);
+            }
         }
         
         return isValid;

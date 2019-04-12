@@ -301,6 +301,37 @@ public class OrganizationControllerTest {
     }
 
     @Test
+    public void validationTest() {
+        OrganizationInputModel organization = new OrganizationInputModel("Dave's cool websites llc", "example.com", "1234", "Los Angeles", "CA", "United States", "", 
+                    "1234 N Main St.", new Date(), new Date());
+        when(organizationService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        when(organizationService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        boolean result = orgController.validateNewRecord(organization);
+        assert(result);
+    }
+    
+    @Test
+    public void validationFailureTest() {
+        OrganizationInputModel organization = new OrganizationInputModel("Good ol' websites", "example.com", "1234", "Los Angeles", "CA", "United States", "", 
+                    "1234 N Main St.", new Date(), new Date());
+        when(organizationService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        when(organizationService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        boolean result = orgController.validateNewRecord(organization);
+        assert(result == false);
+    }
+    
+    @Test
+    public void validationFailureTest2() {
+        OrganizationInputModel organization = new OrganizationInputModel("Dave's cool websites llc", "example.com", "1234", "Los Angeles", "CA", "'Murika", "", 
+                    "1234 N Main St.", new Date(), new Date());
+        when(organizationService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        when(organizationService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        boolean result = orgController.validateNewRecord(organization);
+        assert(result == false);
+    }
+
+    
+    @Test
     public void dummyTest() {
         
     }

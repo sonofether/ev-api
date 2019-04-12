@@ -6,5 +6,4 @@ public class DefaultLegalEntity extends LegalEntity {
     public boolean validate(String organizationName) {
         return true;
     }
-
 }

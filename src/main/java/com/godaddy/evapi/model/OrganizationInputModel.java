@@ -15,6 +15,23 @@ public class OrganizationInputModel extends BaseModel {
     private String phoneNumber;
     private String address;
     
+    public OrganizationInputModel() {
+    }
+    
+    public OrganizationInputModel(String organizationName, String commonName, String serialNumber, String localityName, String state, String country, String phoneNumber,
+                String address, Date issuedDate, Date expirationDate) {
+        this.organizationName = organizationName;
+        this.commonName = commonName;
+        this.serialNumber = serialNumber;
+        this.localityName = localityName;
+        this.stateOrProvinceName = state;
+        this.countryName = country;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
+        this.issuedDate = issuedDate;
+        this.expirationDate = expirationDate;
+    }
+    
     public String getOrganizationName() {
         return organizationName;
     }

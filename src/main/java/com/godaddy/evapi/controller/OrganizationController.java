@@ -87,7 +87,7 @@ public class OrganizationController extends BaseController {
         // Create our new id
         UUID id = UUID.randomUUID();
         // Validate fields.
-        if(validateNewRecord(organization.getOrganizationName(), organization.getCommonName())) {
+        if(validateNewRecord(organization)) {
             // Setup the model to be stored                   
             OrganizationModel org = new OrganizationModel(id, organization.getOrganizationName(), organization.getCommonName(), organization.getSerialNumber(),
                         organization.getLocalityName(), organization.getStateOrProvinceName(), organization.getCountryName(), ca, organization.getPhoneNumber(),
@@ -298,23 +298,29 @@ public class OrganizationController extends BaseController {
         loggingService.insertLog( new LogModel(request.getRemoteHost(), "GET", "/org/collisionDetect/" + name + "/" + serialNumber + "/" + country + "/" + state, "", getCAName(), "OK", 0, collision.isCollision() ? 1 : 0, 0, 200) );
         return collision;        
     }
-        
-    // PRIVATE CALLS / HELPER FUNCTIONS
-        
-    private boolean validateNewRecord(String name, String cName) {
+    
+    public boolean validateNewRecord(OrganizationInputModel organization) {
         // TODO: We may need to be more granular when checking the organization name - Might need region.
         boolean result = false;
-        OrganizationListModel orgList = organizationService.findByOrganizationName(name, this.offset, this.limit);
-        if(orgList != null && orgList.getCount() < 1) {
-            orgList = organizationService.findByCommonName(cName, 0, 1);
-            if(orgList != null && orgList.getCount() < 1) {
+        OrganizationListModel orgList = organizationService.findByOrganizationName(organization.getOrganizationName(), this.offset, this.limit);
+        if(orgList == null || orgList.getCount() < 1) {
+            orgList = organizationService.findByCommonName(organization.getCommonName(), 0, 1);
+            if(orgList == null || orgList.getCount() < 1) {
                 result = true;
+            }
+        }
+        
+        // Continue validating the record.
+        if(result) {
+            result = validateCountry(organization.getCountryName());
+            if(result) {
+                result = validateOrganizationName(organization.getOrganizationName());
             }
         }
         
         return result;        
     }
-    
+
     private boolean validateCountry(String country) {
         boolean isValid = false;
         countryDisplayName = "";
@@ -322,8 +328,8 @@ public class OrganizationController extends BaseController {
         // Try looking up by code
         try {
             Locale locale = new Locale("", country);
-            if(locale != null) {
-                countryCode = country;
+            if(locale != null && locale.getISO3Country() != null) {
+                countryCode = locale.getCountry();
                 countryDisplayName = locale.getDisplayCountry();
                 isValid = true;
             }
@@ -339,7 +345,7 @@ public class OrganizationController extends BaseController {
             }
             
             Locale locale = map.get(country.toLowerCase());
-            if(locale != null) {
+            if(locale != null && locale.getISO3Country() != null) {
                 isValid = true;
                 countryDisplayName = locale.getDisplayCountry();
                 countryCode = locale.getCountry();
@@ -351,8 +357,13 @@ public class OrganizationController extends BaseController {
     
     // TODO: We want to validate the organization entity type in some fashion. 
     // Some classes have been created in legal entity to this end, but it will depend on the country supplied
-    private boolean validateOrganizationName(String countryCode, String orgName) {
+    private boolean validateOrganizationName(String orgName) {
         ILegalEntity le = LegalEntityFactory.GetLegalEntity(countryCode);
         return le.validate(orgName);
     }    
+
+    
+    // PRIVATE CALLS / HELPER FUNCTIONS
+        
+
 }
