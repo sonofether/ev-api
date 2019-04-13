@@ -52,7 +52,7 @@ phases:
       - mvn package
 artifacts:
   files:
-    - target/ev-api-0.0.1-SNAPSHOT.jar
+    - target/evapi-0.0.1-SNAPSHOT.jar
   secondary-artifacts:
     artifact1:
       files:
