@@ -4,6 +4,7 @@ package com.godaddy.evapi.controller;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -328,25 +329,29 @@ public class OrganizationController extends BaseController {
         countryDisplayName = "";
         countryCode = "";
         // Try looking up by code
-        Locale locale = new Locale("", country);
-        if(locale != null && locale.getISO3Country() != null) {
-            countryCode = locale.getCountry();
-            countryDisplayName = locale.getDisplayCountry();
-            isValid = true;
+        try {
+            Locale locale = new Locale("", country);
+            if(locale != null && locale.getISO3Country() != null) {
+                countryCode = locale.getCountry();
+                countryDisplayName = locale.getDisplayCountry();
+                isValid = true;
+            }
+        } catch (MissingResourceException e) {
+            // Not a problem. This is fine. Try another way.
         }
         
         // Try looking up by name
         if(!isValid) {
             Map<String,Locale> map = new HashMap<String,Locale>();
-            for (Locale locale2 : Locale.getAvailableLocales()) {
-                map.put(locale2.getDisplayCountry().toLowerCase(), locale2);
+            for (Locale locale : Locale.getAvailableLocales()) {
+                map.put(locale.getDisplayCountry().toLowerCase(), locale);
             }
             
-            Locale locale2 = map.get(country.toLowerCase());
-            if(locale2 != null && locale2.getISO3Country() != null) {
+            Locale locale = map.get(country.toLowerCase());
+            if(locale != null && locale.getISO3Country() != null) {
                 isValid = true;
-                countryDisplayName = locale2.getDisplayCountry();
-                countryCode = locale2.getCountry();
+                countryDisplayName = locale.getDisplayCountry();
+                countryCode = locale.getCountry();
             }
         }
         
