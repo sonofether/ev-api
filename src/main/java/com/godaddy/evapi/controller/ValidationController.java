@@ -177,7 +177,7 @@ public class ValidationController extends BaseController{
                 success = true;
             }
         } catch (Exception ex) {
-            
+            ex.printStackTrace();
         }
         finally {
             deleteFile(basePath + id);

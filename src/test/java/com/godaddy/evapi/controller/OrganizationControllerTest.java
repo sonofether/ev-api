@@ -266,7 +266,7 @@ public class OrganizationControllerTest {
         organization.setExpirationDate(new Date());
         organization.setIssuedDate(new Date());
         organization.setLocalityName("Tempe");
-        organization.setOrganizationName("Test Organization Name");
+        organization.setOrganizationName("Test Organization Name LLC");
         organization.setSerialNumber("serialNumber");
         organization.setStateOrProvinceName("AZ");
         ResponseEntity<String> result = orgController.AddOrganization(organization);

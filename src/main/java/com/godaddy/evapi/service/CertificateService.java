@@ -52,7 +52,6 @@ public class CertificateService extends BaseAWSService implements ICertificateSe
                 result = true;
             }
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return result;
@@ -69,7 +68,6 @@ public class CertificateService extends BaseAWSService implements ICertificateSe
                 return true;
             }
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return false;
@@ -107,7 +105,7 @@ public class CertificateService extends BaseAWSService implements ICertificateSe
             SearchResponse response = restClient.search(request);
             return findRecords(response, offset, limit);
         } catch (Exception ex) {
-            
+            ex.printStackTrace();
         }
         
         return null;

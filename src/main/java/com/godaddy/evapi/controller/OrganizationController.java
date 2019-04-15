@@ -320,35 +320,33 @@ public class OrganizationController extends BaseController {
         
         return result;        
     }
-
+    
+    // PRIVATE CALLS / HELPER FUNCTIONS
+    
     private boolean validateCountry(String country) {
         boolean isValid = false;
         countryDisplayName = "";
         countryCode = "";
         // Try looking up by code
-        try {
-            Locale locale = new Locale("", country);
-            if(locale != null && locale.getISO3Country() != null) {
-                countryCode = locale.getCountry();
-                countryDisplayName = locale.getDisplayCountry();
-                isValid = true;
-            }
-        } catch (Exception ex) {
-            // Didn't match. No big deal. Try lookup by name.
+        Locale locale = new Locale("", country);
+        if(locale != null && locale.getISO3Country() != null) {
+            countryCode = locale.getCountry();
+            countryDisplayName = locale.getDisplayCountry();
+            isValid = true;
         }
         
         // Try looking up by name
         if(!isValid) {
             Map<String,Locale> map = new HashMap<String,Locale>();
-            for (Locale locale : Locale.getAvailableLocales()) {
-                map.put(locale.getDisplayCountry().toLowerCase(), locale);
+            for (Locale locale2 : Locale.getAvailableLocales()) {
+                map.put(locale2.getDisplayCountry().toLowerCase(), locale2);
             }
             
-            Locale locale = map.get(country.toLowerCase());
-            if(locale != null && locale.getISO3Country() != null) {
+            Locale locale2 = map.get(country.toLowerCase());
+            if(locale2 != null && locale2.getISO3Country() != null) {
                 isValid = true;
-                countryDisplayName = locale.getDisplayCountry();
-                countryCode = locale.getCountry();
+                countryDisplayName = locale2.getDisplayCountry();
+                countryCode = locale2.getCountry();
             }
         }
         
@@ -360,10 +358,6 @@ public class OrganizationController extends BaseController {
     private boolean validateOrganizationName(String orgName) {
         ILegalEntity le = LegalEntityFactory.GetLegalEntity(countryCode);
         return le.validate(orgName);
-    }    
-
-    
-    // PRIVATE CALLS / HELPER FUNCTIONS
-        
+    }        
 
 }
