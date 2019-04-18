@@ -71,6 +71,13 @@ public class ValidationControllerTest {
     }
     
     @Test
+    public void validationControllerGetFailureTest() {
+        when(validationService.findById(anyString())).thenReturn(null);
+        ResponseEntity<ValidationItemModel> response = validationController.GetValidationById("1234");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+    
+    @Test
     public void validationControllerGetAllTest() {
         Optional<Integer> optInt = Optional.empty();
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -83,7 +90,18 @@ public class ValidationControllerTest {
         assertNotNull(validationList);
         assert(validationList.getValidationItems().get(0).getValidates().equals("owner"));        
     }
-    
+
+    @Test
+    public void validationControllerGetAllFailureTest() {
+        Optional<Integer> optInt = Optional.empty();
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI("https://example.com/?offset=0&limit=25");
+        request.setQueryString("?offset=0&limit=25");
+        when(validationService.findAll(anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<ValidationListModel>> response = validationController.GetValidationList(request, optInt, optInt);
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
     @Test
     public void validationControllerGetByCertId() {
         Optional<Integer> optInt = Optional.empty();
@@ -97,7 +115,7 @@ public class ValidationControllerTest {
         assertNotNull(validationList);
         assert(validationList.getValidationItems().get(0).getValidates().equals("owner"));        
     }
-    
+
     @Test
     public void validationControllerGetByCertIdFailure() {
         Optional<Integer> optInt = Optional.empty();
@@ -197,7 +215,7 @@ public class ValidationControllerTest {
         ValidationInputModel validationItem = new ValidationInputModel();
         validationItem.setCertId(UUID.randomUUID());
         validationItem.setValidates("Owner");
-        when(organizationService.findById(any())).thenReturn(null);
+        when(organizationService.findById(any())).thenReturn(TestOrganizationService.generateOrganization());
         when(validationService.save(any())).thenReturn(false);
         ResponseEntity<IdModel> response = validationController.AddValidationItem(validationItem);
         assert(response.getStatusCode() == HttpStatus.BAD_REQUEST);

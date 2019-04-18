@@ -154,10 +154,7 @@ public class LogModel {
         record.put("properties", properties);
         Map<String, Object> mappings = new HashMap<>();
         mappings.put("record", record);
-        //Map<String, Object> indexMap = new HashMap<>();
-        //indexMap.put("mappings", mappings);
         
         return mappings;
-        //return indexMap;
     }
 }

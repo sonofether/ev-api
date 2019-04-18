@@ -64,12 +64,47 @@ public class BasicAuthenticationProviderTest {
     
     @Test
     public void basicProviderAuthenitcationFailureTest() throws Exception {
-        String creds = "asink:potato";        
+        String creds = "asink:potato";
         Authentication authMock = Mockito.mock(Authentication.class);
         Optional<String> value = Optional.fromNullable("Basic " + java.util.Base64.getMimeEncoder().encodeToString(creds.getBytes()));
         when(authMock.getPrincipal()).thenReturn(value);
         Authentication authorized = baProvider.authenticate(authMock);
         assert(authorized == null);
+    }
+    
+    @Test
+    public void basicAuthExceptionFailure() throws Exception {
+        Authentication authMock = Mockito.mock(Authentication.class);
+        Optional<String> value = Optional.fromNullable("");
+        when(authMock.getPrincipal()).thenReturn(value);
+        Authentication authorized = baProvider.authenticate(authMock);
+        assert(authorized == null);
+    }
+    
+    @Test
+    public void basicAuthExceptionFileFailure() {
+        ReflectionTestUtils.setField(baProvider, "fileName", "");
+        String creds = "asink:password";        
+        Authentication authMock = Mockito.mock(Authentication.class);
+        Optional<String> value = Optional.fromNullable("Basic " + java.util.Base64.getMimeEncoder().encodeToString(creds.getBytes()));
+        when(authMock.getPrincipal()).thenReturn(value);
+        Authentication authorized = baProvider.authenticate(authMock);
+        assert(authorized == null);
+        
+        ReflectionTestUtils.setField(baProvider, "fileName", "/Users/authfile");
+    }
+    
+    @Test
+    public void basicAuthExceptionKeyFailure() {
+        ReflectionTestUtils.setField(baProvider, "privateKeyFile", "");
+        String creds = "asink:password";        
+        Authentication authMock = Mockito.mock(Authentication.class);
+        Optional<String> value = Optional.fromNullable("Basic " + java.util.Base64.getMimeEncoder().encodeToString(creds.getBytes()));
+        when(authMock.getPrincipal()).thenReturn(value);
+        Authentication authorized = baProvider.authenticate(authMock);
+        assert(authorized == null);
+        
+        ReflectionTestUtils.setField(baProvider, "privateKeyFile", "/Users/private_key.der");
     }
     
     /*

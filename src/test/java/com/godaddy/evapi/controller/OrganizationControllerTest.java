@@ -91,6 +91,32 @@ public class OrganizationControllerTest {
     }
     
     @Test
+    public void organizationControllerGetAllTest2() {
+        Optional<Integer> optInt = Optional.of(-1);
+        Optional<Integer> optInt2 = Optional.of(2000);
+        when(organizationService.findAll(anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
+        when(organizationService.findByVariableArguments(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationList(optInt, optInt2, "");
+        assert(response.getStatusCode() == HttpStatus.OK);
+        OrganizationListModel orgList = response.getBody().getContent();
+        assertNotNull(orgList);
+        assert(orgList.getOrganizations().get(0).getCommonName().equals("example.com"));
+    }
+    
+    @Test
+    public void organizationControllerGetAllTest3() {
+        Optional<Integer> optInt = Optional.of(1);
+        when(organizationService.findAll(anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
+        when(organizationService.findByVariableArguments(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
+        ResponseEntity<Resource<OrganizationListModel>> response = orgController.GetOrganizationList(optInt, optInt, "");
+        assert(response.getStatusCode() == HttpStatus.OK);
+        OrganizationListModel orgList = response.getBody().getContent();
+        assertNotNull(orgList);
+        assert(orgList.getOrganizations().get(0).getCommonName().equals("example.com"));
+    }
+
+    
+    @Test
     public void organizationControllerGetAllFailureTest() {
         Optional<Integer> optInt = Optional.empty();
         when(organizationService.findAll(anyInt(), anyInt())).thenReturn(new OrganizationListModel());
@@ -299,10 +325,41 @@ public class OrganizationControllerTest {
         CollisionModel result = orgController.CollisionDetectByCommonName("");
         assert(result.isCollision());
     }
+    
+    @Test
+    public void organizationControllerCollisionDetectSerialNumber() {
+        when(organizationService.findBySerialNumber(anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
+        CollisionModel result = orgController.CollisionDetectBySerialNumber("");
+        assert(result.isCollision());
+    }
+    
+    @Test
+    public void organizationControllerCollisionDetectNameSerialCountry() {
+        when(organizationService.findByNameSerialNumberCountry(anyString(), anyString(), anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
+        CollisionModel result = orgController.CollisionDetectByNameSerialCountry("", "", "");
+        assert(result.isCollision());
+    }
+
+    @Test
+    public void organizationControllerCollisionDetectAll() {
+        when(organizationService.findByNameSerialNumberCountryState(anyString(), anyString(), anyString(), anyString(), anyInt(), anyInt())).thenReturn(TestOrganizationService.generateOrganizationList());
+        CollisionModel result = orgController.CollisionDetectByAll("", "", "", "");
+        assert(result.isCollision());
+    }
 
     @Test
     public void validationTest() {
         OrganizationInputModel organization = new OrganizationInputModel("Dave's cool websites llc", "example.com", "1234", "Los Angeles", "CA", "United States", "", 
+                    "1234 N Main St.", new Date(), new Date());
+        when(organizationService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        when(organizationService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        boolean result = orgController.validateNewRecord(organization);
+        assert(result);
+    }
+    
+    @Test
+    public void validationSucessTest() {
+        OrganizationInputModel organization = new OrganizationInputModel("Dave's cool websites llc", "example.com", "1234", "Los Angeles", "CA", "US", "", 
                     "1234 N Main St.", new Date(), new Date());
         when(organizationService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(null);
         when(organizationService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(null);

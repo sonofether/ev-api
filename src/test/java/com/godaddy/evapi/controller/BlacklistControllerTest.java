@@ -104,8 +104,6 @@ public class BlacklistControllerTest {
         assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
     }
 
-
-
     @Test
     public void blacklistControllerGetByCA() {
         MockHttpServletRequest request = new MockHttpServletRequest();

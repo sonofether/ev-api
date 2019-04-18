@@ -4,13 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.godaddy.evapi.model.OrganizationListModel;
-import com.godaddy.evapi.model.OrganizationModel;
 import com.godaddy.evapi.model.ValidationItemModel;
 import com.godaddy.evapi.model.ValidationListModel;
 
-public class TestValidationService implements IValidationService {
-    
+public class TestValidationService implements IValidationService {    
     public static ValidationListModel generateValidationList() {
         ValidationListModel validationList = new ValidationListModel();
         validationList.setCount(1);
@@ -41,7 +38,6 @@ public class TestValidationService implements IValidationService {
 
     @Override
     public boolean delete(String id) {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -62,4 +58,5 @@ public class TestValidationService implements IValidationService {
         // TODO Auto-generated method stub
         return null;
     }
+    
 }

@@ -10,7 +10,15 @@ public class USLegalEntityTest {
     
     @Before
     public void init() {
+        ILegalEntity iLegalEntity = LegalEntityFactory.GetLegalEntity("US");
         MockitoAnnotations.initMocks(this);
+    }
+    
+    @Test
+    public void createDefault() {
+        LegalEntityFactory factory = new LegalEntityFactory();
+        ILegalEntity iLegalEntity = factory.GetLegalEntity("potato");
+        assert(iLegalEntity.validate(""));
     }
     
     @Test

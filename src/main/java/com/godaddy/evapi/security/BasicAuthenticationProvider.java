@@ -140,12 +140,8 @@ public class BasicAuthenticationProvider implements AuthenticationProvider {
                         .signWith(SignatureAlgorithm.RS256, key).compact();
             
             return token;
-        } catch (IOException iex) {
-            iex.printStackTrace();
-        } catch (NoSuchAlgorithmException nsaex) {
-            nsaex.printStackTrace();
-        } catch (InvalidKeySpecException iksex) {
-            iksex.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
         return null;
     }

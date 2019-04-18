@@ -270,7 +270,7 @@ public class OrganizationController extends BaseController {
     
     @GetMapping(value="/collisionDetect/{name}/{serialNumber}/{country}")
     @ApiOperation(value = "True/False if a match is found for the supplied organization name, serial number, and country", response = CollisionModel.class)
-    public CollisionModel CollisionDetectByAll(@ApiParam(name="name", value="Organization Name to search", required = true) @PathVariable(value="name") String name, 
+    public CollisionModel CollisionDetectByNameSerialCountry(@ApiParam(name="name", value="Organization Name to search", required = true) @PathVariable(value="name") String name, 
                 @ApiParam(name="serialNumber", value="Serial Number to search", required = true) @PathVariable(value="serialNumber") String serialNumber,
                 @ApiParam(name="country", value="Country to search", required = true) @PathVariable(value="country") String country
                 ) {
@@ -301,7 +301,6 @@ public class OrganizationController extends BaseController {
     }
     
     public boolean validateNewRecord(OrganizationInputModel organization) {
-        // TODO: We may need to be more granular when checking the organization name - Might need region.
         boolean result = false;
         OrganizationListModel orgList = organizationService.findByOrganizationName(organization.getOrganizationName(), this.offset, this.limit);
         if(orgList == null || orgList.getCount() < 1) {
@@ -358,7 +357,7 @@ public class OrganizationController extends BaseController {
         return isValid;
     }
     
-    // TODO: We want to validate the organization entity type in some fashion. 
+    // We want to validate the organization entity type in some fashion. 
     // Some classes have been created in legal entity to this end, but it will depend on the country supplied
     private boolean validateOrganizationName(String orgName) {
         ILegalEntity le = LegalEntityFactory.GetLegalEntity(countryCode);

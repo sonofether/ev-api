@@ -152,7 +152,7 @@ public class FlaglistController extends BaseController {
     
     @GetMapping("/ofac")
     @ApiOperation(value = "Get a list of flag list records matching ofac source", response = FlaglistListModel.class)
-    public ResponseEntity<Resource<FlaglistListModel>> getFlaglistBySource(@RequestParam( value="offset") Optional<Integer> offsetValue,
+    public ResponseEntity<Resource<FlaglistListModel>> getFlaglistByOfacSource(@RequestParam( value="offset") Optional<Integer> offsetValue,
                 @RequestParam( value="limit") Optional<Integer> limitValue) {
         setOffsetLimit(offsetValue,limitValue);
         Calendar cal = Calendar.getInstance();

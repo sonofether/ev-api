@@ -73,6 +73,13 @@ public class FlaglistControllerTest {
     }
     
     @Test
+    public void flaglistControllerGetByIdFailureTest() {
+        when(flaglistService.findById(anyString())).thenReturn(null);
+        ResponseEntity<FlaglistModel> response = flController.getById("1234");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+    
+    @Test
     public void flaglistControllerGetAll() {
         Optional<Integer> optInt = Optional.empty();
         when(loggingService.insertLog(any())).thenReturn(true);
@@ -147,6 +154,14 @@ public class FlaglistControllerTest {
     }
     
     @Test
+    public void flaglistControllerGetByCNameFailure() {
+        Optional<Integer> optInt = Optional.empty();
+        when(flaglistService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByCName(optInt, optInt, "example.com");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+    
+    @Test
     public void flaglistControllerGetByOrgName() {
         Optional<Integer> optInt = Optional.empty();
         when(flaglistService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
@@ -156,6 +171,15 @@ public class FlaglistControllerTest {
         assertNotNull(flList);
         assert(flList.getFlaglistEntries().get(0).getCommonName().equals("example.com"));
     }
+    
+    @Test
+    public void flaglistControllerGetByOrgNameFailure() {
+        Optional<Integer> optInt = Optional.empty();
+        when(flaglistService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByName(optInt, optInt, "organizagtion name");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+
     
     @Test
     public void flaglistControllerGetBySource() {
@@ -170,6 +194,34 @@ public class FlaglistControllerTest {
     }
     
     @Test
+    public void flaglistControllerGetBySourceFailure() {
+        Optional<Integer> optInt = Optional.empty();
+        when(flaglistService.findBySource(anyString(), anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistBySource(optInt, optInt, "example.com");
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+    
+    @Test
+    public void flaglistControllerGetByOfacSource() {
+        Optional<Integer> optInt = Optional.empty();
+        when(flaglistService.findByDateAndSource(any(), anyString(), anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByOfacSource(optInt, optInt);
+        assert(response.getStatusCode() == HttpStatus.OK);
+        FlaglistListModel flList = response.getBody().getContent();
+        assertNotNull(flList);
+        assert(flList.getFlaglistEntries().get(0).getCommonName().equals("example.com"));
+
+    }
+    
+    @Test
+    public void flaglistControllerGetByOfacSourceFailure() {
+        Optional<Integer> optInt = Optional.empty();
+        when(flaglistService.findByDateAndSource(any(), anyString(), anyInt(), anyInt())).thenReturn(null);
+        ResponseEntity<Resource<FlaglistListModel>> response = flController.getFlaglistByOfacSource(optInt, optInt);
+        assert(response.getStatusCode() == HttpStatus.NOT_FOUND);
+    }
+    
+    @Test
     public void flaglistControllerCreate() {
         FlaglistInputModel flEntry = new FlaglistInputModel();
         flEntry.setCommonName("myorganizationllc.com");
@@ -180,6 +232,22 @@ public class FlaglistControllerTest {
         when(flaglistService.save(any())).thenReturn(true);
         ResponseEntity<IdModel> response = flController.createFlaglistEntry(flEntry);
         assert(response.getStatusCode() == HttpStatus.CREATED);
+        assertNotNull(response.getBody());
+        assert(response.getBody().toJson().length() > 0);
+    }
+    
+    @Test
+    public void flaglistControllerCreateUpdate() {
+        FlaglistInputModel flEntry = new FlaglistInputModel();
+        flEntry.setCommonName("myorganizationllc.com");
+        flEntry.setOrganizationName("My organization LLC");
+        flEntry.setReason("This is not a real company");
+        
+        when(flaglistService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        when(flaglistService.save(any())).thenReturn(false);
+        when(flaglistService.findByCommonName(anyString(), anyInt(), anyInt())).thenReturn(TestFlaglistService.generateFlaglistList());
+        ResponseEntity<IdModel> response = flController.createFlaglistEntry(flEntry);
+        assert(response.getStatusCode() == HttpStatus.OK);
         assertNotNull(response.getBody());
         assert(response.getBody().toJson().length() > 0);
     }
@@ -234,6 +302,12 @@ public class FlaglistControllerTest {
         when(flaglistService.findById(anyString())).thenReturn(null);
         ResponseEntity<HttpStatus> response = flController.deleteFlaglist("SomeIdString");
         assert(response.getStatusCode() == HttpStatus.BAD_REQUEST);
+    }
+    
+    @Test
+    public void flaglistControllerUpdateTest() {
+        ResponseEntity<HttpStatus> response = flController.updateFlaglist("");
+        assert(response.getStatusCode() == HttpStatus.NOT_IMPLEMENTED);
     }
     
     

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +39,8 @@ public class AuthenticationFilterTest {
     private AuthenticationManager authManager;
     private Authentication authMock;
     private MockHttpServletRequest request;
-    private MockHttpServletResponse response;
+    //private MockHttpServletResponse response;
+    private HttpServletResponse response;
     private MockFilterChain chain;
     
     @Before
@@ -51,10 +53,11 @@ public class AuthenticationFilterTest {
         ReflectionTestUtils.setField(authFilter, "urlHelper", urlHelper, UrlPathHelper.class);
         ReflectionTestUtils.setField(authFilter, "authenticationManager", authManager, AuthenticationManager.class);
         
+        when(authMock.isAuthenticated()).thenReturn(true);
         when(authManager.authenticate(any())).thenReturn(authMock);
         
         request = new MockHttpServletRequest();
-        response = new MockHttpServletResponse();
+        response = Mockito.mock(HttpServletResponse.class);//new MockHttpServletResponse();
         chain = new MockFilterChain();
         
         request.addHeader("X-Auth-Token", TokenAuthenticationProviderTest.generateToken(5));
@@ -64,7 +67,8 @@ public class AuthenticationFilterTest {
     @Test
     public void testBasicAuth() throws Exception {
         request.setMethod("POST");
-        when(urlHelper.getPathWithinApplication(request)).thenReturn("login");
+        when(urlHelper.getPathWithinApplication(request)).thenReturn("/login");
+        Mockito.doNothing().when(response).addHeader(anyString(), anyString());
         
         authFilter.doFilter(request, response, chain);
         assert(true);

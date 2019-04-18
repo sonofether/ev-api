@@ -10,6 +10,7 @@ public class CALegalEntityTest {
     
     @Before
     public void init() {
+        ILegalEntity iLegalEntity = LegalEntityFactory.GetLegalEntity("CA");
         MockitoAnnotations.initMocks(this);
     }
     
