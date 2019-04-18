@@ -23,6 +23,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -81,6 +82,29 @@ public class AuthenticationFilterTest {
  
         authFilter.doFilter(request, response, chain);
         assert(true);
+    }
+    
+    @Test
+    public void testTokenAuthNullFailure() throws Exception {
+        when(authManager.authenticate(any())).thenReturn(null);
+        request.setMethod("GET");
+        when(urlHelper.getPathWithinApplication(request)).thenReturn("organization");
+ 
+        authFilter.doFilter(request, response, chain);
+        assert(true);
+        when(authManager.authenticate(any())).thenReturn(authMock);
+    }
+    
+    @Test
+    public void testBasicAuthNullFailure() throws Exception {
+        when(authManager.authenticate(any())).thenReturn(null);
+        request.setMethod("POST");
+        when(urlHelper.getPathWithinApplication(request)).thenReturn("/login");
+        Mockito.doNothing().when(response).addHeader(anyString(), anyString());
+        
+        authFilter.doFilter(request, response, chain);
+        assert(true);
+        when(authManager.authenticate(any())).thenReturn(authMock);
     }
     
 }

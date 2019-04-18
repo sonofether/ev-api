@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -49,6 +50,18 @@ public class BasicAuthenticationProviderTest {
         ReflectionTestUtils.setField(baProvider, "privateKeyFile", "/Users/private_key.der");
         ReflectionTestUtils.setField(baProvider, "timeout", 5);
         ReflectionTestUtils.setField(baProvider, "defaultSalt", "GettingSaltyUpInHere");
+    }
+    
+    @Test
+    public void basicProviderSupportsTest() {
+        boolean supports = baProvider.supports(UsernamePasswordAuthenticationToken.class);
+        assert(supports);
+    }
+    
+    @Test
+    public void basicProviderSupportsFailureTest() {
+        boolean supports = baProvider.supports(Object.class);
+        assert(supports == false);
     }
     
     @Test
