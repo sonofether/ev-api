@@ -30,4 +30,11 @@ public class OrganizationModelTest {
         assert(model.getSerialNumber().equals("serial"));
         assert(model.getStateOrProvinceName().equals("state"));
     }
+    
+    @Test
+    public void organizationModelToStringTest() {
+        OrganizationModel model = new OrganizationModel(UUID.randomUUID(), "organization llc", "example.org", "serial", "locality1", "state", "country", "ca", "phone1", "address1");
+        assert(model.toString().length() > 0);
+        assert(model.toJson().length() > 0);
+    }
 }
