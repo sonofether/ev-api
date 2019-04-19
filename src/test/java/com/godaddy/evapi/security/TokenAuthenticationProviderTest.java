@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -67,8 +68,13 @@ public class TokenAuthenticationProviderTest {
         // Needs to provide a valid token...
         Optional<String> value = Optional.absent();
         when(authMock.getPrincipal()).thenReturn(value);
-        Authentication auth = tokenProvider.authenticate(authMock);
-        assert(auth != null);
+        try {
+            Authentication auth = tokenProvider.authenticate(authMock);
+            assert(false);
+        } catch (BadCredentialsException bce) {
+            // This is what we expect.
+            assert(true);
+        }
     }
     
     // This test checks the timeout logic.
