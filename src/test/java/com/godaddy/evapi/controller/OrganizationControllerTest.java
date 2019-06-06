@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,11 +30,13 @@ import com.godaddy.evapi.model.CollisionModel;
 import com.godaddy.evapi.model.OrganizationInputModel;
 import com.godaddy.evapi.model.OrganizationListModel;
 import com.godaddy.evapi.model.OrganizationModel;
+import com.godaddy.evapi.service.HomoglyphService;
 import com.godaddy.evapi.service.ILoggingService;
 import com.godaddy.evapi.service.IOrganizationService;
 import com.godaddy.evapi.service.TestOrganizationService;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.lang.Assert;
 
 public class OrganizationControllerTest {
     @Mock
@@ -44,6 +47,9 @@ public class OrganizationControllerTest {
     
     @Mock
     HttpServletRequest request;
+    
+    @Mock
+    HomoglyphService homoglyphService;
     
     @InjectMocks
     private OrganizationController orgController;
@@ -386,7 +392,46 @@ public class OrganizationControllerTest {
         boolean result = orgController.validateNewRecord(organization);
         assert(result == false);
     }
-
+    
+    @Test
+    public void homoglyphDetectionTest() {
+        String domain = "yahoo.com";
+        when(homoglyphService.containsMixedAlphabets(anyString())).thenReturn(false);
+        when(homoglyphService.convertHomoglyphs(anyString())).thenReturn(domain);
+        List<String> result = orgController.ValidateDomain(domain);
+        Assert.notEmpty(result);
+        Assert.isTrue(result.get(0).equals("No issues detected"));
+    }
+    
+    @Test
+    public void homoglyphDetectionTestFailure() {
+        String domain = "yaℎoo.com";
+        when(homoglyphService.containsMixedAlphabets(anyString())).thenReturn(true);
+        when(homoglyphService.convertHomoglyphs(anyString())).thenReturn("yahoo.com");
+        List<String> result = orgController.ValidateDomain(domain);
+        Assert.notEmpty(result);
+        Assert.isTrue(!result.contains("No issues detected"));
+    }
+    
+    @Test
+    public void homoglyphDetectionTestFailureBlank() {
+        String domain = "";
+        when(homoglyphService.containsMixedAlphabets(anyString())).thenReturn(false);
+        when(homoglyphService.convertHomoglyphs(anyString())).thenReturn(domain);
+        List<String> result = orgController.ValidateDomain(domain);
+        Assert.notEmpty(result);
+        Assert.isTrue(!result.get(0).equals("No issues detected"));
+    }
+    
+    @Test
+    public void homoglyphDetectionTestSuccess2() {
+        String domain = "yah00.com";
+        when(homoglyphService.containsMixedAlphabets(anyString())).thenReturn(false);
+        when(homoglyphService.convertHomoglyphs(anyString())).thenReturn(domain);
+        List<String> result = orgController.ValidateDomain(domain);
+        Assert.notEmpty(result);
+        Assert.isTrue(result.contains("No issues detected"));
+    }
     
     @Test
     public void dummyTest() {

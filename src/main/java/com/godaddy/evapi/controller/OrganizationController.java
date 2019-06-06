@@ -1,15 +1,25 @@
 package com.godaddy.evapi.controller;
 
 
+import java.io.UnsupportedEncodingException;
+import java.net.IDN;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
@@ -34,9 +44,13 @@ import com.godaddy.evapi.model.LogModel;
 import com.godaddy.evapi.model.OrganizationInputModel;
 import com.godaddy.evapi.model.OrganizationListModel;
 import com.godaddy.evapi.model.OrganizationModel;
+import com.godaddy.evapi.service.HomoglyphService;
 import com.godaddy.evapi.service.ICertificateService;
 import com.godaddy.evapi.service.ILoggingService;
 import com.godaddy.evapi.service.IOrganizationService;
+import com.google.common.collect.Sets;
+import com.ibm.icu.text.SpoofChecker;
+import com.ibm.icu.text.SpoofChecker.CheckResult;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -55,6 +69,9 @@ public class OrganizationController extends BaseController {
     
     @Autowired
     HttpServletRequest request;
+    
+    @Autowired
+    HomoglyphService homoglyphService;
     
     //@Autowired
     //ICertificateService certificateService;
@@ -300,6 +317,40 @@ public class OrganizationController extends BaseController {
         return collision;        
     }
     
+    @GetMapping(value="/validate/domain/{name}")
+    @ApiOperation(value = "List opf potential issues found for the supplied domain", response = String.class)
+    public List<String> ValidateDomain(@ApiParam(name="name", value="Domain Name to valdiate", required = true) @PathVariable(value="name") String name) {
+        List<String> results = new ArrayList<String>();
+        try {
+            results = validateDomain(URLDecoder.decode(name, StandardCharsets.UTF_16.toString()));
+        } catch (UnsupportedEncodingException e) {
+            results.add("Error decoding url string");
+            e.printStackTrace();
+        }
+        if (results.size() < 1) {
+            results.add("No issues detected");
+        }
+        
+        return results;
+    }
+
+    @GetMapping(value="/validate/domain/topsites/{name}")
+    @ApiOperation(value = "List opf potential issues found for the supplied domain", response = String.class)
+    public List<String> ValidateDomainTopSites(@ApiParam(name="name", value="Domain Name to valdiate", required = true) @PathVariable(value="name") String name) {
+        List<String> results = new ArrayList<String>();
+        try {
+            results = homoglyphService.searchForTopSites(URLDecoder.decode(name, StandardCharsets.UTF_16.toString()));
+        } catch (UnsupportedEncodingException e) {
+            results.add("Error decoding url string");
+            e.printStackTrace();
+        }
+        
+        if (results.size() < 1) {
+            results.add("No issues detected");
+        }
+        return results;
+    }
+    
     public boolean validateNewRecord(OrganizationInputModel organization) {
         boolean result = false;
         OrganizationListModel orgList = organizationService.findByOrganizationName(organization.getOrganizationName(), this.offset, this.limit);
@@ -362,6 +413,35 @@ public class OrganizationController extends BaseController {
     private boolean validateOrganizationName(String orgName) {
         ILegalEntity le = LegalEntityFactory.GetLegalEntity(countryCode);
         return le.validate(orgName);
-    }        
+    }    
+    
+    // Return a list of errors/failed checks. Null if the string is fine.
+    private List<String> validateDomain(String domain) {
+        List<String> notes = new ArrayList<String>();
+        if(StringUtils.isEmpty(domain)) {
+            notes.add("Domain is empty");
+        }
+        else {
+            if(containsMixedCharacterSet(domain.toLowerCase()) || homoglyphService.containsMixedAlphabets(domain)) {
+                notes.add("Domain contains mixed character sets");
+            }
+            
+            String convertedDomain = homoglyphService.convertHomoglyphs(domain);
+            // TODO: Lookup converted domain in top 100 or whatever and see if there is a conflict?
+            if(false == convertedDomain.toLowerCase().equals(domain.toLowerCase())) {
+                notes.add("Domain converts to " + convertedDomain);
+            }
+            
+            //homoglyphService.searchForTopSites(domain);
+        }
+        
+        return notes;
+    }
+
+    private boolean containsMixedCharacterSet(String domain) {
+        CheckResult result = new CheckResult();
+        boolean failed = new SpoofChecker.Builder().build().failsChecks(IDN.toUnicode(domain.toLowerCase()), result);
+        return failed && result.checks != SpoofChecker.WHOLE_SCRIPT_CONFUSABLE;
+    }
 
 }
