@@ -3,6 +3,7 @@ package com.godaddy.evapi.service;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import com.godaddy.evapi.model.TopSiteListModel;
@@ -369,8 +372,11 @@ public class HomoglyphService {
     
     private static List<Set<Integer>> loadFile() throws IOException {
         final List<Set<Integer>> homoglyphs = new ArrayList<Set<Integer>>();
+        
+        Resource resource = new ClassPathResource("char_codes.txt");
+        java.io.File file = resource.getFile();
 
-        try (final BufferedReader bufferedReader = new BufferedReader(new FileReader("/Users/asink/char_codes.txt"))) {
+        try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
             String line;
             while((line = bufferedReader.readLine()) != null){
                 line = line.trim();
