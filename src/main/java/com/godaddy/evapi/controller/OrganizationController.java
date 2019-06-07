@@ -318,7 +318,7 @@ public class OrganizationController extends BaseController {
     }
     
     @GetMapping(value="/validate/domain/{name}")
-    @ApiOperation(value = "List opf potential issues found for the supplied domain", response = String.class)
+    @ApiOperation(value = "List of potential issues found for the supplied domain", response = String.class)
     public List<String> ValidateDomain(@ApiParam(name="name", value="Domain Name to valdiate", required = true) @PathVariable(value="name") String name) {
         List<String> results = new ArrayList<String>();
         try {
@@ -335,7 +335,7 @@ public class OrganizationController extends BaseController {
     }
 
     @GetMapping(value="/validate/domain/topsites/{name}")
-    @ApiOperation(value = "List opf potential issues found for the supplied domain", response = String.class)
+    @ApiOperation(value = "List of top sites that potentially match the supplied domain", response = String.class)
     public List<String> ValidateDomainTopSites(@ApiParam(name="name", value="Domain Name to valdiate", required = true) @PathVariable(value="name") String name) {
         List<String> results = new ArrayList<String>();
         try {
