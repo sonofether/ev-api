@@ -112,9 +112,9 @@ public class FlaglistService  extends BaseAWSService implements IFlaglistService
             if(response.isExists()) {
                 String data = response.getSourceAsString();
                 ObjectMapper objectMapper = new ObjectMapper();
-                    flaglist = objectMapper.readValue(data, FlaglistModel.class);
-                    // id is stored as _id, so we need to grab it
-                    flaglist.setId(UUID.fromString(response.getId()));
+                flaglist = objectMapper.readValue(data, FlaglistModel.class);
+                // id is stored as _id, so we need to grab it
+                flaglist.setId(UUID.fromString(response.getId()));
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -210,42 +210,6 @@ public class FlaglistService  extends BaseAWSService implements IFlaglistService
 
  
     // PRIVATE FUNCTION CALLS / HELPERS
-    
-    private QueryBuilder buildQueryFromFilters(String filter) {
-        if(filter.length() > 0) {
-            int searchTerms = 0;
-            BoolQueryBuilder query = QueryBuilders.boolQuery();
-            String[] filterTerms = filter.split("and|AND");
-            for(String filterTerm : filterTerms) {
-                String[] parts = filterTerm.trim().split(" ");
-                if(parts.length < 3) {
-                    continue;
-                }
-    
-                String fieldName = parts[0].trim();
-                String searchTerm = parts[2].trim();
-                if(fieldName.length() < 1 || searchTerm.length() < 1) {
-                    continue;
-                }
-                
-                QueryBuilder matchQuery = QueryBuilders.matchQuery(fieldName, searchTerm);
-                String equality = parts[1].trim().toLowerCase();
-                if(equality.equals("eq")) {
-                    ++searchTerms;
-                    query = query.must(matchQuery);
-                } else if (equality.equals("neq")) {
-                    ++searchTerms;
-                    query = query.mustNot(matchQuery);
-                }
-            }
-            
-            if(++searchTerms > 0) {
-                return query;
-            }
-        }
-        
-        return QueryBuilders.matchAllQuery();
-    }
     
     private FlaglistListModel findRecords(SearchResponse response, int offset, int limit) {
         FlaglistListModel flaglistList = new FlaglistListModel();

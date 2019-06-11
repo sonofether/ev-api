@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -27,12 +28,15 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.godaddy.evapi.model.CollisionModel;
+import com.godaddy.evapi.model.FraudListModel;
 import com.godaddy.evapi.model.OrganizationInputModel;
 import com.godaddy.evapi.model.OrganizationListModel;
 import com.godaddy.evapi.model.OrganizationModel;
 import com.godaddy.evapi.service.HomoglyphService;
+import com.godaddy.evapi.service.IFraudService;
 import com.godaddy.evapi.service.ILoggingService;
 import com.godaddy.evapi.service.IOrganizationService;
+import com.godaddy.evapi.service.TestFraudService;
 import com.godaddy.evapi.service.TestOrganizationService;
 
 import io.jsonwebtoken.Claims;
@@ -44,6 +48,9 @@ public class OrganizationControllerTest {
     
     @Mock
     ILoggingService loggingService;
+    
+    @Mock
+    IFraudService fraudService;
     
     @Mock
     HttpServletRequest request;
@@ -432,6 +439,65 @@ public class OrganizationControllerTest {
         Assert.notEmpty(result);
         Assert.isTrue(result.contains("No issues detected"));
     }
+    
+    @Test
+    public void topSitesTest() {
+        when(homoglyphService.searchForTopSites(anyString())).thenReturn(new ArrayList<String>());
+        List<String> result = orgController.ValidateDomainTopSites("example.com");
+        Assert.notEmpty(result);
+        Assert.isTrue(result.contains("No issues detected"));
+    }
+    
+    @Test
+    public void topSitesTestFailure() {
+        List<String> returnResult = new ArrayList<String>();
+        returnResult.add("Matches google.com");
+        when(homoglyphService.searchForTopSites(anyString())).thenReturn(returnResult);
+        List<String> result = orgController.ValidateDomainTopSites("google.com");
+        Assert.notEmpty(result);
+        Assert.isTrue(result.contains("Matches google.com"));
+    }
+    
+    @Test
+    public void fraudTestSuccess() {
+        //when(organizationService.findByOrganizationName(anyString(), anyInt(), anyInt())).thenReturn(null);
+        when(fraudService.findAll(anyInt(), anyInt())).thenReturn(TestFraudService.GenerateFraudListModel());
+        List<String> result = orgController.ValidateFraudDomain("gragle.com");
+        Assert.notEmpty(result);
+        Assert.isTrue(result.contains("No issues detected"));
+        result = orgController.ValidateFraudOrganization("Fraggle Rock");
+        Assert.notEmpty(result);
+        Assert.isTrue(result.contains("No issues detected"));
+
+    }
+
+    @Test
+    public void fraudTestFailure() {
+        when(fraudService.findAll(anyInt(), anyInt())).thenReturn(TestFraudService.GenerateFraudListModel());
+        List<String> result = orgController.ValidateFraudDomain("google.com");
+        Assert.notEmpty(result);
+        Assert.isTrue(!result.contains("No issues detected"));
+        result = orgController.ValidateFraudOrganization("citibank");
+        Assert.notEmpty(result);
+        Assert.isTrue(!result.contains("No issues detected"));
+    }
+
+    @Test
+    public void fraudTestFailure2() {
+        when(fraudService.findAll(anyInt(), anyInt())).thenReturn(new FraudListModel());
+        List<String> result = orgController.ValidateFraudDomain("google.com");
+        Assert.notEmpty(result);
+        Assert.isTrue(result.contains("No issues detected"));
+    }
+
+    @Test
+    public void fraudTestFailure3() {
+        when(fraudService.findAll(anyInt(), anyInt())).thenReturn(null);
+        List<String> result = orgController.ValidateFraudDomain("google.com");
+        Assert.notEmpty(result);
+        Assert.isTrue(result.contains("No issues detected"));
+    }
+
     
     @Test
     public void dummyTest() {

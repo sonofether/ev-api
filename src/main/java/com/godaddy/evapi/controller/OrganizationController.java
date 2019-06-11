@@ -39,6 +39,8 @@ import com.godaddy.evapi.legalentity.ILegalEntity;
 import com.godaddy.evapi.legalentity.LegalEntityFactory;
 import com.godaddy.evapi.model.CertificateModel;
 import com.godaddy.evapi.model.CollisionModel;
+import com.godaddy.evapi.model.FraudListModel;
+import com.godaddy.evapi.model.FraudModel;
 import com.godaddy.evapi.model.IdModel;
 import com.godaddy.evapi.model.LogModel;
 import com.godaddy.evapi.model.OrganizationInputModel;
@@ -46,9 +48,9 @@ import com.godaddy.evapi.model.OrganizationListModel;
 import com.godaddy.evapi.model.OrganizationModel;
 import com.godaddy.evapi.service.HomoglyphService;
 import com.godaddy.evapi.service.ICertificateService;
+import com.godaddy.evapi.service.IFraudService;
 import com.godaddy.evapi.service.ILoggingService;
 import com.godaddy.evapi.service.IOrganizationService;
-import com.google.common.collect.Sets;
 import com.ibm.icu.text.SpoofChecker;
 import com.ibm.icu.text.SpoofChecker.CheckResult;
 
@@ -72,6 +74,9 @@ public class OrganizationController extends BaseController {
     
     @Autowired
     HomoglyphService homoglyphService;
+    
+    @Autowired
+    IFraudService fraudService;
     
     //@Autowired
     //ICertificateService certificateService;
@@ -350,6 +355,34 @@ public class OrganizationController extends BaseController {
         }
         return results;
     }
+    
+    @GetMapping(value="/validate/fraud/domain/{name}")
+    @ApiOperation(value = "List of top sites that potentially match the supplied domain", response = String.class)
+    public List<String> ValidateFraudDomain(@ApiParam(name="name", value="Domain Name to valdiate", required = true) @PathVariable(value="name") String name) {
+        return ValidateFraudOrganization(name);
+    }
+    
+    @GetMapping(value="/validate/fraud/organization/{name}")
+    @ApiOperation(value = "List of top sites that potentially match the supplied domain", response = String.class)
+    public List<String> ValidateFraudOrganization(@ApiParam(name="name", value="Domain Name to valdiate", required = true) @PathVariable(value="name") String name) {
+        List<String> results = new ArrayList<String>();
+        FraudListModel fraudListModel = fraudService.findAll(0, 1000);
+        if(fraudListModel != null) {
+            List<FraudModel> fraudList = fraudListModel.getFraudList();
+            for(FraudModel fraudItem : fraudList) {
+                if(name.contains(fraudItem.getKeyword())) {
+                    results.add("Match detected on " + fraudItem.getKeyword());
+                }
+            }
+        }
+
+        if (results.size() < 1) {
+            results.add("No issues detected");
+        }
+
+        return results;
+    }
+
     
     public boolean validateNewRecord(OrganizationInputModel organization) {
         boolean result = false;
