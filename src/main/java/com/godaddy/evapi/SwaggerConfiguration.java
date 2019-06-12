@@ -85,6 +85,8 @@ public class SwaggerConfiguration extends WebMvcConfigurationSupport {
             regex("/org.*"),
             regex("/cname.*"),
             regex("/validation.*"),
-            regex("/login.*"));
+            regex("/login.*"),
+            regex("/fraud.*")
+            );
       }
 }
