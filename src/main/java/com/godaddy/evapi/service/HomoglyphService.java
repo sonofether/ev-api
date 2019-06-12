@@ -373,7 +373,7 @@ public class HomoglyphService {
     private static List<Set<Integer>> loadFile() throws IOException {
         final List<Set<Integer>> homoglyphs = new ArrayList<Set<Integer>>();
         
-        Resource resource = new ClassPathResource("char_codes.txt");
+        Resource resource = new ClassPathResource("/char_codes.txt");
         java.io.File file = resource.getFile();
 
         try (final BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
