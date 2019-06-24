@@ -11,6 +11,11 @@ public class FraudModel extends BaseModel {
     String description;
     String insertedBy;
     
+    public FraudModel() {
+        this.id = UUID.randomUUID();
+        this.lastUpdated = new Date();
+    }
+    
     public FraudModel(String keyword, int type, String description, String insertedBy) {
         this.setup(UUID.randomUUID(), keyword, new Date(), type, description, insertedBy);
     }
