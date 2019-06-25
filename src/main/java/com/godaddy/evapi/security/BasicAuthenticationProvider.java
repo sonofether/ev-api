@@ -3,6 +3,7 @@ package com.godaddy.evapi.security;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
@@ -17,6 +18,8 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -107,20 +110,56 @@ public class BasicAuthenticationProvider implements AuthenticationProvider {
             String hashedUser = OneWayEncryption.HashValue(user, defaultSalt.getBytes());
             do {
                 line = buffer.readLine();
-                if(line != null) {
-                    String[] values = line.split("\t");
-                    if(hashedUser.equals(values[0].trim())) {
-                        String encryptedPassword = OneWayEncryption.HashValue(pass, java.util.Base64.getMimeDecoder().decode(values[2].trim()));
-                        isValid = encryptedPassword.equals(values[1].trim());
-                        ca = values[3].trim();
-                        break;
-                    }
+                isValid = validateLine(line, hashedUser);
+                if(isValid) {
+                    break;
                 }
             } while (line != null);
             buffer.close();
         } catch (Exception ex) {
             logger.debug("Failed to compare against authfile: " + ex.getMessage());
             ex.printStackTrace();
+        }
+        
+        try {
+            if(!isValid) {
+                String hashedUser = OneWayEncryption.HashValue(user, defaultSalt.getBytes());
+                Resource resource = new ClassPathResource("/authfile");
+                try (final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
+                    String line;
+                    while((line = bufferedReader.readLine()) != null){
+                        line = line.trim();
+                        isValid = validateLine(line, hashedUser);
+                        
+                    }
+                } catch (IOException e) {
+                    logger.debug("Failed to compare against authfile: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        } catch (Exception ex) {
+            logger.debug("Failed to compare against authfile: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+        
+        return isValid;
+    }
+    
+    private boolean validateLine(String line, String hashedUser) {
+        boolean isValid = false;
+        if(line != null) {
+            String[] values = line.split("\t");
+            if(hashedUser.equals(values[0].trim())) {
+                String encryptedPassword;
+                try {
+                    encryptedPassword = OneWayEncryption.HashValue(pass, java.util.Base64.getMimeDecoder().decode(values[2].trim()));
+                    isValid = encryptedPassword.equals(values[1].trim());
+                    ca = values[3].trim();
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
         }
         
         return isValid;
