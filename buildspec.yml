@@ -43,7 +43,7 @@ phases:
       - sed -i -e 's/ENDPOINT/'$EVAPI_ENDPOINT'/g' src/main/resources/application.properties
       - sed -i -e 's/REGION/'$EVAPI_REGION'/g' src/main/resources/application.properties
       - sed -i -e 's/SERVICENAME/'$EVAPI_SERVICENAME'/g' src/main/resources/application.properties
-      - sed -i -e 's/AUTHFILE/'$EVAPI_AUTHFILE_2'/g' src/main/resources/authfile
+      - echo $EVAPI_AUTHFILE_2 > src/main/resources/authfile
   build:
     commands:
       - echo EV API build started on `date`
